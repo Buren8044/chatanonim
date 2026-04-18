@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/chat/:kod", "destination": "/kullanıcı.html" },
+    { "source": "/musteri/:kod", "destination": "/müşteri.html" },
+    { "source": "/", "destination": "/kullanıcı.html" }
+  ]
+}
