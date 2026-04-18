@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/admin",                "destination": "/admin.html" },
+    { "source": "/admin.html",           "destination": "/admin.html" },
+    { "source": "/musteri/:kod*",        "destination": "/müşteri.html" },
+    { "source": "/kullanici/:kod*",      "destination": "/kullanıcı.html" }
+  ]
+}
