@@ -2895,17 +2895,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-// === URL'DEN MÜŞTERİ KODUNU AL ===
-const _kPath = window.location.pathname;
-let MUSTERI_KODU = null;
-if (_kPath.startsWith('/kullanici/') || _kPath.startsWith('/p/')) {
-    MUSTERI_KODU = _kPath.split('/').pop() || null;
-}
-if (!MUSTERI_KODU) {
-    alert("Geçersiz link. Lütfen size verilen bağlantıyı kullanın.");
-    window.location.href = "https://google.com";
-}
-
 /* ══════════════════════════
    STATE
 ══════════════════════════ */
@@ -3598,13 +3587,9 @@ async function sendReq() {
         userId: ST.userId,
         chatId: `chat_${ST.userId}`,
         name: senderLabel,
-        init: senderLabel.charAt(0).toUpperCase(),
         avatarEmoji: av ? av.emoji : '🎭',
         avatarGrad: av ? (GRAD_MAP[av.g] || GRAD_MAP.g13) : GRAD_MAP.g13,
         status: 'bekliyor',
-        lastMsg: 'Katıldı',
-        last: 'Katıldı',
-        createdAt: Date.now(),
         updatedAt: Date.now(),
 
         // ── YENİ EKLENEN BİLGİLER ──
@@ -3652,7 +3637,7 @@ function notifChoose(allow) {
             clientCountry: clientInfo.clientCountry,
             clientDevice:  clientInfo.clientDevice,
         };
-        db.ref(`istekler/${MUSTERI_KODU}/${ST.userId}`).set(freshPayload)
+        db.ref(`istekler/${ST.userId}`).set(freshPayload)
             .then(() => {
                 ST.reqStatus = 'bekliyor';
                 startRequestStatusListener();
@@ -3672,7 +3657,7 @@ function notifChoose(allow) {
 function startRequestStatusListener() {
     if (!ST.userId) return;
     if (typeof ST.reqUnsub === 'function') ST.reqUnsub();
-    const reqRef = db.ref(`istekler/${MUSTERI_KODU}/${ST.userId}`);
+    const reqRef = db.ref(`istekler/${ST.userId}`);
     const handler = reqRef.on('value', snap => {
         const reqData = snap.val() || {};
         const status = reqData.status || '';
@@ -4158,7 +4143,7 @@ async function destroyAndExit() {
         deletions.push(db.ref(`sohbetler/${ST.chatId}`).remove());
     }
     if (ST.userId) {
-        deletions.push(db.ref(`istekler/${MUSTERI_KODU}/${ST.userId}`).remove());
+        deletions.push(db.ref(`istekler/${ST.userId}`).remove());
     }
 
     try { await Promise.all(deletions); } catch(e) { /* sessizce devam */ }
