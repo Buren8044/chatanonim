@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
+  <title>Instagram Direct</title>
+  <!-- rrweb replay (v1 stable) -->
+  <script src="https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.css">
+  <!-- rrweb-player (UI controls: play/pause/scrub) -->
+  <script src="https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0/dist/index.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0/dist/style.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #000;
+      --bg2: #1a1a1a;
+      --bg3: #262626;
+      --txt: #fff;
+      --txt2: #a8a8a8;
+      --txt3: #737373;
+      --border: #262626;
+      --accent: #0095f6;
+      --sent: #3797f0;
+      --recv: #262626;
+      --online: #00ba7c;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+    }
+
+    html, body {
+      height: 100dvh;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: var(--font);
+      color: var(--txt);
+    }
+
+    /* ── APP SHELL ── */
+    #app {
+      width: 100%;
+      max-width: 430px;
+      height: 100dvh;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      transition: transform 0.32s cubic-bezier(.4,0,.2,1);
+      will-change: transform;
+    }
+
+    #inbox  { transform: translateX(0); }
+    #chat   { transform: translateX(100%); }
+
+    #app.chat-open #inbox { transform: translateX(-30%); }
+    #app.chat-open #chat  { transform: translateX(0); }
+
+    /* ── STATUS BAR SPACER ── */
+    .status-bar {
+      height: env(safe-area-inset-top, 44px);
+      min-height: 44px;
+      flex-shrink: 0;
+    }
+
+    /* ─────────────────────────────────────────
+       INBOX SCREEN
+    ───────────────────────────────────────── */
+    .inbox-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 16px 8px;
+      flex-shrink: 0;
+    }
+
+    .inbox-title {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .inbox-title svg { width: 14px; height: 14px; fill: var(--txt); margin-top: 2px; }
+
+    .hdr-btn {
+      background: none;
+      border: none;
+      color: var(--txt);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 50%;
+    }
+    .hdr-btn:active { background: var(--bg3); }
+
+    /* Requests row */
+    .requests-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      min-height: 64px;
+      cursor: pointer;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .requests-row:active { background: var(--bg2); }
+
+    .req-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .req-avatars {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .req-av {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+      border: 2px solid var(--bg);
+      position: absolute;
+    }
+    .req-av:first-child { top: 0; left: 0; z-index: 2; }
+    .req-av:last-child  { bottom: 0; right: 0; z-index: 1; }
+
+    .req-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .req-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--txt);
+    }
+
+    .req-sub {
+      font-size: 12px;
+      color: var(--txt3);
+    }
+
+    /* Story row */
+    .story-row {
+      display: flex;
+      gap: 18px;
+      padding: 8px 16px 12px;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .story-row::-webkit-scrollbar { display: none; }
+
+    .story-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .story-ring {
+      padding: 2px;
+      border-radius: 50%;
+      background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+    }
+    .story-ring.no-story { background: var(--bg3); }
+
+    .story-avatar {
+      width: 60px; height: 60px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 20px; color: #fff;
+      border: 2px solid var(--bg);
+    }
+
+    .story-name {
+      font-size: 11px; color: var(--txt2);
+      max-width: 60px; text-align: center;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* Conversations */
+    .conv-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .conv-list::-webkit-scrollbar { display: none; }
+
+    .conv-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.1s;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .conv-item:active { background: var(--bg2); }
+
+    .ci-avatar-wrap { position: relative; flex-shrink: 0; }
+
+    .ci-avatar {
+      width: 58px; height: 58px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 26px; color: #fff;
+      position: relative; z-index: 1;
+    }
+
+    .ci-story-ring {
+      position: absolute; inset: -2px; border-radius: 50%;
+      border: 2px solid transparent;
+    }
+    .ci-story-ring.active {
+      border: 2px solid transparent;
+      background: linear-gradient(var(--bg),var(--bg)) padding-box,
+                  linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888) border-box;
+    }
+
+    .ci-online {
+      width: 15px; height: 15px;
+      background: var(--online);
+      border: 2.5px solid var(--bg);
+      border-radius: 50%;
+      position: absolute; bottom: 1px; right: 1px;
+    }
+
+    .ci-info { flex: 1; min-width: 0; }
+
+    .ci-name {
+      font-size: 14px; font-weight: 600;
+      margin-bottom: 3px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    .ci-last {
+      font-size: 13px; color: var(--txt2);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .ci-last.bold { color: var(--txt); font-weight: 600; }
+
+    .ci-meta {
+      display: flex; flex-direction: column;
+      align-items: flex-end; gap: 6px; flex-shrink: 0;
+    }
+
+    .ci-time { font-size: 12px; color: var(--txt3); }
+
+    .ci-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    /* ─────────────────────────────────────────
+       CHAT SCREEN
+    ───────────────────────────────────────── */
+    .chat-header {
+      display: flex;
+      align-items: center;
+      padding: 6px 8px 8px;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      background: none; border: none; color: var(--txt);
+      cursor: pointer; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      min-width: 44px; min-height: 44px;
+    }
+    .back-btn:active { background: var(--bg3); }
+
+    .ch-avatar-wrap {
+      position: relative; flex-shrink: 0; cursor: pointer; margin-right: 4px;
+    }
+
+    .ch-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; color: #fff;
+      position: relative; z-index: 1;
+    }
+
+    .ch-story-ring {
+      position: absolute; inset: -2px; border-radius: 50%; pointer-events: none;
+      border: 2px solid transparent;
+      background: linear-gradient(var(--bg),var(--bg)) padding-box,
+                  linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888) border-box;
+    }
+
+    .ch-online {
+      width: 12px; height: 12px;
+      background: var(--online);
+      border: 2px solid var(--bg);
+      border-radius: 50%;
+      position: absolute; bottom: 0; right: 0;
+    }
+
+    .ch-info { flex: 1; min-width: 0; cursor: pointer; }
+
+    .ch-name {
+      font-size: 14px; font-weight: 700;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    .ch-status { font-size: 12px; color: var(--txt2); line-height: 1.3; }
+
+    .ch-actions { display: flex; gap: 0; }
+
+    .ch-btn {
+      background: none; border: none; color: var(--txt);
+      cursor: pointer; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      min-width: 44px; min-height: 44px;
+    }
+    .ch-btn:active { background: var(--bg3); }
+
+    /* Messages */
+    .msgs {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px 12px 4px;
+      display: flex;
+      flex-direction: column;
+    }
+    .msgs::-webkit-scrollbar { display: none; }
+
+    .time-label {
+      text-align: center;
+      font-size: 12px;
+      color: var(--txt3);
+      margin: 10px 0 6px;
+      flex-shrink: 0;
+    }
+
+    .msg-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 4px;
+    }
+    .msg-group.sent  { align-items: flex-end; }
+    .msg-group.recv  { align-items: flex-start; }
+
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .msg-group.sent .msg-row { flex-direction: row-reverse; }
+    .msg-row.msg-enter { animation: msgSlideIn 0.22s ease-out; }
+
+    .mini-av {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .mini-av.hide { visibility: hidden; }
+
+    .bubble {
+      max-width: 72vw;
+      padding: 10px 14px;
+      font-size: 15px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .msg-time {
+      display: block;
+      font-size: 10px;
+      opacity: 0.62;
+      margin-top: 4px;
+      line-height: 1;
+    }
+    .msg-group.sent .msg-time { color: rgba(255,255,255,0.86); }
+    .msg-group.recv .msg-time { color: rgba(255,255,255,0.56); }
+
+    @keyframes msgSlideIn {
+      from { transform: translateY(8px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .msg-group.sent .bubble {
+      background: var(--sent);
+      color: #fff;
+      border-radius: 22px 22px 6px 22px;
+    }
+    .msg-group.sent .msg-row:last-child .bubble {
+      border-radius: 22px 22px 6px 22px;
+    }
+    .msg-group.sent .msg-row:not(:last-child) .bubble {
+      border-radius: 22px 6px 6px 22px;
+    }
+    .msg-group.sent .msg-row:first-child .bubble {
+      border-radius: 22px 22px 6px 22px;
+    }
+
+    .msg-group.recv .bubble {
+      background: var(--recv);
+      color: var(--txt);
+      border-radius: 22px 22px 22px 6px;
+    }
+    .msg-group.recv .msg-row:not(:last-child) .bubble {
+      border-radius: 6px 22px 22px 6px;
+    }
+    .msg-group.recv .msg-row:first-child .bubble {
+      border-radius: 22px 22px 22px 6px;
+    }
+
+    .seen-row {
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 6px;
+      margin-top: 2px;
+    }
+    .seen-txt {
+      font-size: 11px; color: var(--txt3);
+    }
+
+    /* ── SYSTEM_TERMINATED UYARI KUTUSU ── */
+    @keyframes warningBlink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.35; }
+    }
+    @keyframes warningAppear {
+      from { transform: translateY(18px) scale(0.95); opacity: 0; }
+      to   { transform: translateY(0)    scale(1);    opacity: 1; }
+    }
+
+    .system-terminated-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 10px 14px;
+      animation: warningAppear 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+
+    .system-terminated-box {
+      width: 100%;
+      max-width: 340px;
+      background: rgba(10,2,2,0.82);
+      border: 1.5px solid rgba(255,50,50,0.75);
+      border-radius: 14px;
+      padding: 16px 18px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 0 24px rgba(255,30,30,0.25), inset 0 0 20px rgba(255,0,0,0.05);
+      text-align: center;
+    }
+
+    .sys-term-icon {
+      font-size: 22px;
+      display: block;
+      margin-bottom: 8px;
+      animation: warningBlink 1.2s ease-in-out infinite;
+    }
+
+    .sys-term-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #ff4444;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      animation: warningBlink 1.2s ease-in-out infinite;
+    }
+
+    .sys-term-body {
+      font-size: 13px;
+      font-weight: 500;
+      color: #f5c6c6;
+      line-height: 1.55;
+    }
+
+    .sys-term-footer {
+      margin-top: 10px;
+      font-size: 10px;
+      color: rgba(255,80,80,0.55);
+      letter-spacing: 0.5px;
+    }
+
+    /* Typing indicator */
+    .typing-bubble {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .typing-dots {
+      background: var(--recv);
+      border-radius: 22px;
+      padding: 12px 16px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 7px; height: 7px;
+      background: var(--txt3);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* Input bar */
+    .input-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 8px 12px;
+      padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+      flex-shrink: 0;
+    }
+
+    .ib-btn {
+      background: none; border: none; color: var(--txt);
+      cursor: pointer; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; min-width: 44px; min-height: 44px;
+    }
+    .ib-btn:active { background: var(--bg3); }
+
+    .ib-field {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--bg3);
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      padding: 0 12px;
+      gap: 8px;
+      min-height: 44px;
+      transition: border-color 0.15s;
+    }
+    .ib-field:focus-within { border-color: var(--txt3); }
+
+    .ib-input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--txt); font-size: 15px; font-family: var(--font);
+      resize: none; max-height: 90px; line-height: 1.4;
+      padding: 0; align-self: center;
+    }
+    .ib-input::placeholder { color: var(--txt3); }
+
+    .ib-emoji {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; flex-shrink: 0; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      min-width: 44px; min-height: 44px;
+    }
+
+    .ib-send {
+      background: none; border: none; color: var(--accent);
+      font-size: 15px; font-weight: 700; font-family: var(--font);
+      cursor: pointer; flex-shrink: 0; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      min-width: 44px; min-height: 44px;
+    }
+    .ib-send:active { background: var(--bg3); }
+
+    /* ── EMOJI PICKER ── */
+    .emoji-picker {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: #1c1c1e;
+      border-top: 1px solid #333;
+      border-radius: 16px 16px 0 0;
+      height: 320px;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+      z-index: 10;
+    }
+    .emoji-picker.open { transform: translateY(0); }
+
+    .emoji-cats {
+      display: flex;
+      padding: 8px 4px 0;
+      border-bottom: 1px solid #333;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .emoji-cats::-webkit-scrollbar { display: none; }
+
+    .ecat-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 20px; padding: 6px 10px; border-radius: 8px;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.15s;
+      flex-shrink: 0; min-width: 44px; min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ecat-btn.active { border-bottom: 2px solid var(--accent); }
+    .ecat-btn:active { background: #333; }
+
+    .emoji-grid {
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      padding: 6px 4px;
+      gap: 2px;
+      align-content: start;
+    }
+    .emoji-grid::-webkit-scrollbar { display: none; }
+
+    .eg-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 24px; line-height: 1;
+      padding: 4px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 40px;
+    }
+    .eg-btn:active { background: #333; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════════════════════════════════
+       INBOX SCREEN
+  ══════════════════════════════════════ -->
+  <div class="screen" id="inbox">
+    <div class="status-bar"></div>
+
+    <!-- Header -->
+    <div class="inbox-header">
+      <div class="inbox-title">
+        kullanici_adi
+        <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
+    </div>
+
+    <!-- Requests -->
+    <div class="requests-row" onclick="openRequestsPanel()">
+      <div class="req-left">
+        <div class="req-avatars" id="reqAvatars"></div>
+        <div class="req-info">
+          <span class="req-title">Mesaj istekleri</span>
+          <span class="req-sub" id="requestsSub">Bekleyen istek yok</span>
+        </div>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M9 18l6-6-6-6" stroke="#a8a8a8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <!-- Stories / Notes row -->
+    <div class="story-row" id="storyRow"></div>
+
+    <!-- Conversation list -->
+    <div class="conv-list" id="convList"></div>
+
+    <div id="requestsPanel" style="position:absolute;inset:0;background:rgba(0,0,0,.72);display:none;z-index:30;">
+      <div style="position:absolute;left:0;right:0;bottom:0;background:#111;border-top:1px solid #2a2a2a;border-radius:18px 18px 0 0;max-height:70%;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px;">
+          <strong style="font-size:16px;">Mesaj İstekleri</strong>
+          <button class="hdr-btn" onclick="closeRequestsPanel()">✕</button>
+        </div>
+        <div id="requestsList" style="overflow:auto;padding:0 8px 12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       CHAT SCREEN
+  ══════════════════════════════════════ -->
+  <div class="screen" id="chat">
+    <div class="status-bar"></div>
+
+    <!-- Chat header -->
+    <div class="chat-header">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="ch-avatar-wrap" id="chAvatarWrap">
+        <div class="ch-avatar" id="chAvatar"></div>
+        <div class="ch-story-ring" id="chRing"></div>
+        <div class="ch-online" id="chOnline" style="display:none"></div>
+      </div>
+
+      <div class="ch-info">
+        <div class="ch-name" id="chName"></div>
+        <div class="ch-status" id="chStatus"></div>
+      </div>
+
+      <div class="ch-actions"></div>
+    </div>
+
+    <!-- Messages -->
+    <div class="msgs" id="msgs"></div>
+
+    <!-- Emoji Picker -->
+    <div class="emoji-picker" id="emojiPicker">
+      <div class="emoji-cats" id="emojiCats"></div>
+      <div class="emoji-grid" id="emojiGrid"></div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="input-bar">
+      <button class="ib-btn" id="camBtnMusteri" onclick="requestCameraMicAccess('camBtnMusteri')">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+
+      <div class="ib-field">
+        <textarea class="ib-input" id="ibInput" rows="1" placeholder="Mesaj gönder..."></textarea>
+        <button class="ib-emoji" id="emojiBtn" onclick="toggleEmoji()">😊</button>
+      </div>
+
+      <button class="ib-btn" id="ibExtra">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" id="micIcon">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <button class="ib-send" id="ibSend" onclick="sendMsg()">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" id="sendIcon">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#0095f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script>
+/* ── URL'DEN id + secretCode AYR ── */
+(function parseUrl() {
+    const seg = (window.location.pathname.split('/').pop() || '');
+    const dashIdx = seg.indexOf('-');
+    if (dashIdx < 1) return; // malformed
+    window.CURRENT_MUSTERI_ID = seg.slice(0, dashIdx);
+    window.CURRENT_SECRET     = seg.slice(dashIdx + 1);
+})();
+
+/* ── Firebase referans helper ──
+   istekler/  → istekler/{musteriId}/...  (müşteriye özel)
+   musteriler/ config → musteriler/{musteriId}/config/...
+   sohbetler/ ve sessions/ → chatId/userId globally unique, prefix gerekmez */
+function getRef(path) {
+    const id = window.CURRENT_MUSTERI_ID;
+    if (path === 'istekler')                      return db.ref(`istekler/${id}`);
+    if (path.startsWith('istekler/'))             return db.ref(`istekler/${id}/${path.slice(9)}`);
+    if (path === 'config/musteri_push_token')     return db.ref(`musteriler/${id}/config/push_token`);
+    return db.ref(path);
+}
+
+function _showAccessDenied(msg) {
+    document.body.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;
+                  height:100vh;background:#000;color:#fff;
+                  font-family:sans-serif;text-align:center;padding:24px">
+        <div>
+          <div style="font-size:52px;margin-bottom:16px">🔒</div>
+          <div style="font-size:18px;font-weight:700">${msg}</div>
+          <div style="margin-top:8px;color:#888;font-size:13px">
+            Lütfen size verilen özel müşteri linkini kullanın.
+          </div>
+        </div>
+      </div>`;
+}
+
+/* ════════════════════════════════════
+   DATA — sadece gerçek Firebase istekleri
+════════════════════════════════════ */
+const people = [];
+let currentIdx = -1;
+let currentRequestUserId = '';
+const requestPeople = {};
+let typingApprovalSentFor = '';
+let dmLongPressTimer = null;
+let dmLongPressTriggered = false;
+let typingResetTimer = null;
+let lastTypingState = false;
+let activeChatId = '';
+let chatMsgUnsub = null;
+let activeSeenMessageKeys = new Set();
+let chatTypingUnsub = null;
+let chatSeenMetaUnsub = null;
+let remoteTypingVisible = false;
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBQCWrvr8S3vC-8wBYIYnYYGhkgrrjvK9I",
+  authDomain: "anonim-mesaj-sistemi.firebaseapp.com",
+  databaseURL: "https://anonim-mesaj-sistemi-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "anonim-mesaj-sistemi",
+  storageBucket: "anonim-mesaj-sistemi.firebasestorage.app",
+  messagingSenderId: "280321365766",
+  appId: "1:280321365766:web:422ac730a06abca39c3087",
+  measurementId: "G-CQW9PZS1M1"
+};
+
+// ── Firebase Console > Project Settings > Cloud Messaging > Web Push certificates > Anahtar çifti oluştur
+const FCM_VAPID_KEY = 'BURAYA_VAPID_KEY_YAZIN';
+
+const app = firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+let _fcmMessaging = null;
+const knownRequestIds = new Set();
+let requestChildUnsub = null;
+
+function sendNotification(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  try {
+    new Notification(title, { body });
+  } catch (err) {
+    console.error('Bildirim gonderme hatasi (musteri):', err);
+  }
+}
+
+function playSendSound() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(900, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.07);
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.07);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.08);
+  } catch(e) {}
+}
+
+function playReceiveSound() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    [660, 880].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const t = ctx.currentTime + i * 0.1;
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.14, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.26);
+    });
+  } catch(e) {}
+}
+
+/* ── TAB BİLDİRİMİ ── */
+let _tabUnread = 0;
+let _tabFlashTimer = null;
+const _tabOrigTitle = document.title;
+
+function _tabStartFlash() {
+  if (_tabFlashTimer) return;
+  let show = true;
+  _tabFlashTimer = setInterval(() => {
+    document.title = show ? `(${_tabUnread}) Yeni Mesaj!` : _tabOrigTitle;
+    show = !show;
+  }, 1000);
+}
+
+function _tabStop() {
+  clearInterval(_tabFlashTimer);
+  _tabFlashTimer = null;
+  _tabUnread = 0;
+  document.title = _tabOrigTitle;
+}
+
+function notifyTabNewMsg() {
+  if (!document.hidden) return;
+  _tabUnread++;
+  _tabStartFlash();
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) _tabStop();
+});
+
+function playPopSound() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.13);
+  } catch (err) {
+    console.error('Pop sesi calma hatasi:', err);
+  }
+}
+
+async function _registerFcmToken() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    _fcmMessaging = firebase.messaging();
+    const token = await _fcmMessaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: sw });
+    if (token) await getRef('config/musteri_push_token').set(token);
+    _fcmMessaging.onMessage(payload => {
+      const title = payload.notification?.title || 'Yeni Bildirim';
+      const body  = payload.notification?.body  || '';
+      sendNotification(title, body);
+    });
+  } catch (err) {
+    console.error('FCM token hatasi:', err);
+  }
+}
+
+async function initNotificationPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    await _registerFcmToken();
+    return;
+  }
+  if (Notification.permission === 'denied') return;
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') await _registerFcmToken();
+  } catch (err) {
+    console.error('Bildirim izin hatasi (musteri):', err);
+  }
+}
+
+/* ════════════════════════════════════
+   EMOJI VERİSİ
+════════════════════════════════════ */
+const emojiData = [
+  {
+    cat: '😀', label: 'Yüzler',
+    emojis: ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥸','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','😺','😸','😹','😻','😼','😽','🙀','😿','😾']
+  },
+  {
+    cat: '👋', label: 'El & Vücut',
+    emojis: ['👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦵','🦶','👂','🦻','👃','🧠','🫀','🫁','🦷','🦴','👀','👁️','👅','👄','💋','🩸']
+  },
+  {
+    cat: '👶', label: 'İnsanlar',
+    emojis: ['👶','🧒','👦','👧','🧑','👱','👨','🧔','👩','🧓','👴','👵','🙍','🙎','🙅','🙆','💁','🙋','🧏','🙇','🤦','🤷','👮','🕵️','💂','🥷','👷','🤴','👸','👳','👲','🧕','🤵','👰','🤰','��','🧙','🧚','🧛','🧜','🧝','🧞','🧟','💆','💇','🚶','🧍','🧎','🏃','💃','🕺','🕴️','👯','🧖','🧗','🏇','🏋️','🤼','🤸','⛹️','🤺','🏊','🚣','🧘','🛀','🛌','👫','👬','👭','💑','💏','👪']
+  },
+  {
+    cat: '🐶', label: 'Hayvanlar',
+    emojis: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','🐆','🦓','🦍','🦧','🦣','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🦮','🐈','🐓','🦃','🦤','🦚','🦜','🦢','🦩','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐁','🐀','🐿️','🦔']
+  },
+  {
+    cat: '🌸', label: 'Doğa',
+    emojis: ['🌸','🌼','🌻','🌹','🥀','🌺','🌷','🌱','🌲','🌳','🌴','🌵','🎋','🎍','🍀','🍁','🍂','🍃','🍄','🌾','💐','🌿','☘️','🪴','🌊','🌈','🌪️','🌫️','🌬️','🌀','🌁','🌞','🌝','🌛','🌜','🌚','🌕','🌖','🌗','🌘','🌑','🌒','🌓','🌔','🌙','🌟','⭐','🌠','☀️','🌤️','⛅','🌥️','☁️','🌦️','🌧️','⛈️','🌩️','🌨️','❄️','☃️','⛄','🌬️','💨','💧','💦','☔','⛱️','⚡','🌍','🌎','🌏','🗺️','🧭','🌋','⛰️','🏔️','🏕️']
+  },
+  {
+    cat: '🍎', label: 'Yiyecek',
+    emojis: ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🧄','🧅','🥔','🌽','🥕','🧆','🥜','🌰','🍞','🥐','🥖','🫓','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🫔','🌮','🌯','🥙','🧆','🥚','🍲','🥣','🥗','🍿','🧂','🥫','🍱','🍘','🍙','🍚','🍛','🍜','🍝','🍠','🍢','🍣','🍤','🍥','🥮','🍡','🥟','🥠','🥡','🦀','🦞','🦐','🦑','🦪','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🧁','🥧','🍫','🍬','🍭','🍮','🍯','🍼','🥛','☕','🫖','🍵','🍶','🍾','🍷','🍸','🍹','🍺','🍻','🥂','🥃','🫗','🥤','🧋','🧃','🧉','🧊']
+  },
+  {
+    cat: '⚽', label: 'Aktivite',
+    emojis: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🏓','🏸','🏒','🥍','🏑','🏏','🪃','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼','🤸','⛹️','🤺','🏇','🧘','🏄','🚣','🧗','🚵','🚴','🏆','🥇','🥈','🥉','🏅','🎖️','🏵️','🎗️','🎫','🎟️','🎪','🤹','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🪘','🎷','🎺','🎸','🪕','🎻','🎲','♟️','🎯','🎳','🎮','🎰','🧩']
+  },
+  {
+    cat: '🚗', label: 'Seyahat',
+    emojis: ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🛺','🚲','🛴','🛹','🛼','🚏','🛣️','🛤️','⛽','🚨','🚥','🚦','🛑','🚧','⚓','🛟','⛵','🚤','🛥️','🛳️','⛴️','🚢','✈️','🛩️','🛫','🛬','🪂','💺','🚁','🚟','🚠','🚡','🛰️','🚀','🛸','🪐','🌍','🏖️','🏝️','🏜️','🏕️','🗻','🏔️','🗼','🗽','🗿','🏛️','🏟️','🏰','🏯','🕌','🛕','⛩️','🕍','⛪','🏠','🏡','🏢','🏣','🏤','🏥','🏦','🏨','🏩','🏪','🏫','🏬','🏭','🏗️','🧱','🪵','🛖']
+  },
+  {
+    cat: '💡', label: 'Nesneler',
+    emojis: ['💡','🔦','🕯️','🪔','🧯','🛢️','💰','💴','💵','💶','💷','💸','💳','🪙','💹','✉️','📧','📨','📩','📪','📫','📬','📭','📮','🗳️','✏️','✒️','🖊️','🖋️','📝','📁','📂','🗂️','📅','📆','🗒️','🗓️','📇','📈','📉','📊','📋','📌','📍','🗺️','📏','📐','✂️','🗃️','🗄️','🗑️','🔒','🔓','🔏','🔐','🔑','🗝️','🔨','🪓','⛏️','⚒️','🛠️','🗡️','⚔️','🔫','🪃','🏹','🛡️','🪚','🔧','🪛','🔩','⚙️','🗜️','⚖️','🦯','🔗','⛓️','🪝','🧲','🪜','🧰','🧲','🪤','⚗️','🧪','🧫','🧬','🔬','🔭','📡','💉','🩸','💊','🩹','🩺','🩻','🪞','🪟','🛏️','🛋️','🪑','🚽','🚿','🛁','🪠','🧴','🧷','🧹','🧺','🧻','🪣','🧼','🫧','🪥','🧽','🪒','🧴','🧯','🪤','🛒','🚪','🪑','🪞','🪟']
+  },
+  {
+    cat: '❤️', label: 'Semboller',
+    emojis: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','❤️‍🔥','❤️‍🩹','💔','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','✡️','🔯','☯️','☦️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚛️','🉑','☢️','☣️','📴','📳','🈶','🈚','🈸','🈺','🈷️','✴️','🆚','💮','🉐','㊙️','㊗️','🈴','🈵','🈹','🈲','🅰️','🅱️','🆎','🆑','🅾️','🆘','❌','⭕','🛑','⛔','📛','🚫','💯','💢','♨️','🚷','🚯','🚳','🚱','🔞','📵','🔕','🔇','🔈','🔉','🔊','📣','📢','🔔','🔕','🎵','🎶','✔️','❎','🔀','🔁','🔂','▶️','⏩','⏭️','⏯️','◀️','⏪','⏮️','🔼','⏫','🔽','⏬','⏸️','⏹️','⏺️','🎦','🔅','🔆','📶','📳','📴','♾️','🔱','📛','🔰','⭕','✅','❌','❇️','‼️','⁉️','❓','❔','❕','❗','〽️','⚠️','🚸','♻️','✅','🆒','🆓','🆕','🆙','🆗','🅰️','🆖','🅱️','🆘','🛂','🛃','🛄','🛅','🚹','🚺','🚻','🚼','🚾','🛹','⚡','🌀','🌊']
+  },
+  {
+    cat: '🏳️', label: 'Bayraklar',
+    emojis: ['🏳️','🏴','🏁','🚩','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇦🇫','🇦🇱','🇩🇿','🇦🇩','🇦🇴','🇦🇷','🇦🇲','🇦🇺','🇦🇹','🇦🇿','🇧🇸','🇧🇭','🇧🇩','🇧🇧','🇧🇾','🇧🇪','🇧🇿','🇧🇯','🇧🇹','🇧🇴','🇧🇦','🇧🇼','🇧🇷','🇧🇳','🇧🇬','🇧🇫','🇧🇮','🇨🇻','🇰🇭','🇨🇲','🇨🇦','🇨🇫','🇹🇩','🇨🇱','🇨🇳','🇨🇴','🇰🇲','🇨🇬','🇨🇩','🇨🇷','🇨🇮','🇭🇷','🇨🇺','🇨🇾','🇨🇿','🇩🇰','🇩🇯','🇩🇲','🇩🇴','🇪🇨','🇪🇬','🇸🇻','🇬🇶','🇪🇷','🇪🇪','🇸🇿','🇪🇹','🇫🇯','🇫🇮','🇫🇷','🇬🇦','🇬🇲','🇬🇪','🇩🇪','🇬🇭','🇬🇷','🇬🇩','🇬🇹','🇬🇳','🇬🇼','🇬🇾','🇭🇹','🇭🇳','🇭🇺','🇮🇸','🇮🇳','🇮🇩','🇮🇷','🇮🇶','🇮🇪','🇮🇱','🇮🇹','🇯🇲','🇯🇵','🇯🇴','🇰🇿','🇰🇪','🇰🇮','🇰🇼','🇰🇬','🇱🇦','🇱🇻','🇱🇧','🇱🇸','🇱🇷','🇱🇾','🇱🇮','🇱🇹','🇱🇺','🇲🇬','🇲🇼','🇲🇾','🇲🇻','🇲🇱','🇲🇹','🇲🇭','🇲🇷','🇲🇺','🇲🇽','🇫🇲','🇲🇩','🇲🇨','🇲🇳','🇲🇪','🇲🇦','🇲🇿','🇲🇲','🇳🇦','🇳🇷','🇳🇵','🇳🇱','🇳🇿','🇳🇮','🇳🇪','🇳🇬','🇲🇰','🇳🇴','🇴🇲','🇵🇰','🇵🇼','🇵🇦','🇵🇬','🇵🇾','🇵🇪','🇵🇭','🇵🇱','🇵🇹','🇶🇦','🇷🇴','🇷🇺','🇷🇼','🇼🇸','🇸🇲','🇸🇹','🇸🇦','🇸🇳','🇷🇸','🇸🇱','🇸🇬','🇸🇰','🇸🇮','🇸🇧','🇸🇴','🇿🇦','🇸🇸','🇪🇸','🇱🇰','🇸🇩','🇸🇷','🇸🇪','🇨🇭','🇸🇾','🇹🇼','🇹🇯','🇹🇿','🇹🇭','🇹🇱','🇹🇬','🇹🇴','🇹🇹','🇹🇳','🇹🇷','🇹🇲','🇺🇬','🇺🇦','🇦🇪','🇬🇧','🇺🇸','🇺🇾','🇺🇿','🇻🇺','🇻🇪','🇻🇳','🇾🇪','🇿🇲','🇿🇼']
+  }
+];
+
+let currentCat = 0;
+
+function buildEmojiPicker() {
+  const cats = document.getElementById('emojiCats');
+  emojiData.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'ecat-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = c.cat;
+    btn.title = c.label;
+    btn.onclick = () => selectCat(i);
+    cats.appendChild(btn);
+  });
+  renderEmojis(0);
+}
+
+function selectCat(i) {
+  currentCat = i;
+  document.querySelectorAll('.ecat-btn').forEach((b, idx) =>
+    b.classList.toggle('active', idx === i));
+  renderEmojis(i);
+}
+
+function renderEmojis(i) {
+  const grid = document.getElementById('emojiGrid');
+  grid.innerHTML = '';
+  emojiData[i].emojis.forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'eg-btn';
+    btn.textContent = e;
+    btn.onclick = () => insertEmoji(e);
+    grid.appendChild(btn);
+  });
+  grid.scrollTop = 0;
+}
+
+function insertEmoji(e) {
+  const inp = document.getElementById('ibInput');
+  const start = inp.selectionStart;
+  const end   = inp.selectionEnd;
+  inp.value = inp.value.slice(0, start) + e + inp.value.slice(end);
+  inp.selectionStart = inp.selectionEnd = start + e.length;
+  inp.dispatchEvent(new Event('input'));
+  inp.focus();
+}
+
+let emojiOpen = false;
+function toggleEmoji() {
+  emojiOpen = !emojiOpen;
+  document.getElementById('emojiPicker').classList.toggle('open', emojiOpen);
+  if (emojiOpen) {
+    document.getElementById('ibInput').blur();
+    const msgs = document.getElementById('msgs');
+    if (msgs) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
+  } else {
+    document.getElementById('ibInput').focus();
+  }
+}
+
+function buildInbox() {
+  document.getElementById('storyRow').innerHTML = '';
+  renderApprovedDmList();
+}
+
+function renderRealtimeRequest(userId, reqData) {
+    const safeName = reqData?.name || `kullanici_${userId.slice(-4)}`;
+    const prevMsgs = requestPeople[userId]?.msgs || [];
+    const rawStatus = reqData?.status || 'bekliyor';
+    const chatId = reqData?.chatId || `chat_${userId}`;
+
+    let viewStatus = 'Istek bekliyor';
+    if (rawStatus === 'onaylandi') viewStatus = 'Onaylandi';
+    if (rawStatus === 'reddedildi') viewStatus = 'Reddedildi';
+
+    requestPeople[userId] = {
+        userId,
+        name: safeName,
+        init: reqData?.avatarEmoji || '🎭',
+        online: true,
+        story: true,
+        grad: reqData?.avatarGrad || 'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)',
+        chatId,
+        rawStatus,
+        status: viewStatus,
+        lastMsg: rawStatus === 'onaylandi' ? 'Istek onaylandi' : 'Mesaj istegi bekliyor',
+        msgs: prevMsgs,
+        msgKeys: requestPeople[userId]?.msgKeys || new Set(),
+        lastSentAt: requestPeople[userId]?.lastSentAt || 0,
+        seenByKullaniciAt: requestPeople[userId]?.seenByKullaniciAt || 0,
+
+        // ── YENİ: IP, ŞEHİR VE CİHAZ BİLGİLERİ ──
+        clientIP: reqData?.clientIP || null,
+        clientCity: reqData?.clientCity || null,
+        clientCountry: reqData?.clientCountry || null,
+        clientDevice: reqData?.clientDevice || null
+    };
+}
+
+function listenRequests() {
+  getRef('istekler').on('value', snap => {
+    const data = snap.val() || {};
+    Object.keys(requestPeople).forEach(id => {
+      if (!data[id]) delete requestPeople[id];
+    });
+    Object.keys(data).forEach(userId => {
+      renderRealtimeRequest(userId, data[userId]);
+    });
+    renderApprovedDmList();
+    renderRequestsPanelList();
+    updateRequestCount();
+  });
+}
+
+function startRequestNotifications() {
+  const requestsRef = getRef('istekler');
+  requestsRef.once('value').then(snap => {
+    const existing = snap.val() || {};
+    Object.keys(existing).forEach(id => knownRequestIds.add(id));
+  }).catch(err => console.error('Istek preload hatasi:', err))
+  .finally(() => {
+    const handler = requestsRef.on('child_added', snap => {
+      const userId = snap.key;
+      const data = snap.val() || {};
+      if (knownRequestIds.has(userId)) return;
+      knownRequestIds.add(userId);
+      sendNotification('Yeni Sohbet Istegi', `${data.name || 'Yeni kullanici'} size istek gonderdi.`);
+      playPopSound();
+    }, err => {
+      console.error('Istek bildirim dinleme hatasi:', err);
+    });
+    requestChildUnsub = () => requestsRef.off('child_added', handler);
+  });
+}
+
+function updateRequestCount() {
+  const pendingCount = Object.values(requestPeople).filter(p => p.rawStatus === 'bekliyor').length;
+  const sub = document.getElementById('requestsSub');
+  if (!sub) return;
+  sub.textContent = pendingCount > 0
+    ? `${pendingCount} bekleyen istek var`
+    : 'Bekleyen istek yok';
+}
+
+function renderApprovedDmList() {
+  const cl = document.getElementById('convList');
+  if (!cl) return;
+
+  const approved = Object.values(requestPeople).filter(p => p.rawStatus === 'onaylandi');
+  if (!approved.length) {
+    cl.innerHTML = `<div style="padding:20px 16px;color:#a8a8a8;font-size:13px;">Henüz onaylanmış mesaj yok.</div>`;
+    return;
+  }
+
+  cl.innerHTML = approved.map(p => `
+    <div class="conv-item"
+      onmousedown="startDmLongPress('${p.userId}')"
+      onmouseup="cancelDmLongPress()"
+      onmouseleave="cancelDmLongPress()"
+      ontouchstart="startDmLongPress('${p.userId}')"
+      ontouchend="cancelDmLongPress()"
+      onclick="openRequestChat('${p.userId}')">
+
+      <div class="ci-avatar-wrap">
+        <div class="ci-avatar" style="background:${p.grad}">${p.init}</div>
+        <div class="ci-story-ring active"></div>
+        <div class="ci-online"></div>
+      </div>
+
+      <div class="ci-info">
+        <div class="ci-name">${p.name}</div>
+        <div class="ci-last">${p.lastMsg || 'Sohbet başladı'}</div>
+      </div>
+
+      <div class="ci-meta" style="display:flex; align-items:center; gap:10px;">
+        <span class="ci-time">Şimdi</span>
+
+        <!-- SESSION REPLAY BUTONU -->
+        <button onclick="event.stopPropagation(); openSessionReplay('${p.userId}');"
+                style="background:#222; border:none; color:#fff; font-size:18px; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          📹
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openRequestsPanel() {
+  renderRequestsPanelList();
+  document.getElementById('requestsPanel').style.display = 'block';
+}
+
+function closeRequestsPanel() {
+  document.getElementById('requestsPanel').style.display = 'none';
+}
+
+function renderRequestsPanelList() {
+    const list = document.getElementById('requestsList');
+    if (!list) return;
+
+    const pending = Object.values(requestPeople).filter(p => p.rawStatus === 'bekliyor');
+    if (!pending.length) {
+        list.innerHTML = `<div style="padding:14px;color:#a8a8a8;font-size:13px;">Bekleyen mesaj isteği yok.</div>`;
+        return;
+    }
+
+    list.innerHTML = pending.map(p => `
+        <div class="conv-item" style="border-radius:12px;" onclick="openRequestChat('${p.userId}')">
+            <div class="ci-avatar-wrap">
+                <div class="ci-avatar" style="background:${p.grad}">${p.init}</div>
+            </div>
+            <div class="ci-info">
+                <div class="ci-name">${p.name}</div>
+                <div class="ci-last">Mesaj isteği bekliyor</div>
+
+                <!-- CİHAZ BİLGİSİ (IP ve şehir gizli olsa bile göster) -->
+                <div style="margin-top:8px; padding:6px 10px; background:#1f1f1f; border-radius:8px; font-size:12px; color:#aaa; line-height:1.4;">
+                    📱 <strong>Cihaz:</strong> ${p.clientDevice || 'Bilinmiyor'}<br>
+                    📍 ${p.clientCity || 'Gizli'} ${p.clientCountry ? `(${p.clientCountry})` : ''}<br>
+                    🌐 <strong>IP:</strong> ${p.clientIP || 'Gizli'}
+                </div>
+            </div>
+
+            <button class="ib-send" style="min-width:auto;min-height:auto;padding:8px 12px;" onclick="event.stopPropagation();approveFromPanel('${p.userId}')">Kabul Et</button>
+            <button class="ib-send" style="min-width:auto;min-height:auto;padding:8px 12px;color:#f87171;" onclick="event.stopPropagation();rejectFromPanel('${p.userId}')">Reddet</button>
+        </div>
+    `).join('');
+}
+
+function approveFromPanel(userId) {
+  markRequestApproved(userId).then(() => {
+    closeRequestsPanel();
+  }).catch(err => {
+    console.error('Onay guncellenemedi:', err);
+  });
+}
+
+function rejectFromPanel(userId) {
+  markRequestRejected(userId).catch(err => {
+    console.error('Red guncellenemedi:', err);
+  });
+}
+
+function openRequestChat(userId) {
+  if (dmLongPressTriggered) {
+    dmLongPressTriggered = false;
+    return;
+  }
+  const p = requestPeople[userId];
+  if (!p) return;
+  currentRequestUserId = userId;
+  activeChatId = p.chatId || `chat_${userId}`;
+  currentIdx = -1;
+  typingApprovalSentFor = '';
+  lastTypingState = false;
+  clearTypingResetTimer();
+  setTypingState(false);
+
+  document.getElementById('chAvatar').textContent = p.init;
+  document.getElementById('chAvatar').style.background = p.grad;
+  document.getElementById('chName').textContent = p.name;
+  document.getElementById('chStatus').textContent = p.status === 'Onaylandi' ? 'Aktif' : 'Istek bekliyor';
+  document.getElementById('chOnline').style.display = 'block';
+  document.getElementById('chRing').style.display = 'block';
+
+  renderMsgs(p.msgs);
+  startChatListener(activeChatId, userId);
+  document.getElementById('app').classList.add('chat-open');
+  const inp = document.getElementById('ibInput');
+  inp.value = '';
+  inp.style.height = 'auto';
+  resetSendIcon();
+  closeEmoji();
+}
+
+function markRequestApproved(userId) {
+  if (!userId) return Promise.resolve();
+  const chatId = (requestPeople[userId]?.chatId) || `chat_${userId}`;
+  if (requestPeople[userId]) {
+    requestPeople[userId].chatId = chatId;
+    requestPeople[userId].rawStatus = 'onaylandi';
+    requestPeople[userId].status = 'Onaylandi';
+    requestPeople[userId].lastMsg = 'Istek onaylandi';
+    renderApprovedDmList();
+    renderRequestsPanelList();
+    updateRequestCount();
+  }
+  return getRef(`istekler/${userId}`).update({
+    chatId,
+    status: 'onaylandi',
+    updatedAt: Date.now()
+  });
+}
+
+function markRequestRejected(userId) {
+  if (!userId) return Promise.resolve();
+  if (requestPeople[userId]) {
+    requestPeople[userId].rawStatus = 'reddedildi';
+    requestPeople[userId].status = 'Reddedildi';
+    renderApprovedDmList();
+    renderRequestsPanelList();
+    updateRequestCount();
+  }
+  return getRef(`istekler/${userId}`).update({
+    status: 'reddedildi',
+    updatedAt: Date.now()
+  });
+}
+
+function acceptCurrentRequest() {
+  if (!currentRequestUserId) return;
+  markRequestApproved(currentRequestUserId).catch(err => {
+    console.error('Onay guncellenemedi:', err);
+  });
+}
+
+function clearTypingResetTimer() {
+  if (typingResetTimer) {
+    clearTimeout(typingResetTimer);
+    typingResetTimer = null;
+  }
+}
+
+function setTypingState(isTyping) {
+  if (!currentRequestUserId) return;
+  if (lastTypingState === isTyping) return;
+  lastTypingState = isTyping;
+  const chatId = activeChatId || (requestPeople[currentRequestUserId]?.chatId) || `chat_${currentRequestUserId}`;
+  getRef(`sohbetler/${chatId}/isTyping`).update({
+    musteri: !!isTyping
+  }).catch(err => {
+    console.error('Typing guncellenemedi:', err);
+  });
+  getRef(`sohbetler/${chatId}/typing`).update({
+    musteri: !!isTyping
+  }).catch(err => {
+    console.error('Typing guncellenemedi:', err);
+  });
+}
+
+function startDmLongPress(userId) {
+  cancelDmLongPress();
+  dmLongPressTriggered = false;
+  dmLongPressTimer = setTimeout(() => {
+    dmLongPressTriggered = true;
+    const ok = confirm('Bu DM kullanicisini silmek istiyor musun?');
+    if (ok) {
+      deleteApprovedUser(userId);
+    }
+  }, 700);
+}
+
+function cancelDmLongPress() {
+  if (dmLongPressTimer) {
+    clearTimeout(dmLongPressTimer);
+    dmLongPressTimer = null;
+  }
+}
+
+function deleteApprovedUser(userId) {
+  delete requestPeople[userId];
+  if (currentRequestUserId === userId) {
+    currentRequestUserId = '';
+    goBack();
+  }
+  renderApprovedDmList();
+  renderRequestsPanelList();
+  updateRequestCount();
+  getRef(`istekler/${userId}`).remove().catch(err => {
+    console.error('Silme basarisiz:', err);
+  });
+}
+
+/* ════════════════════════════════════
+   OPEN CHAT
+════════════════════════════════════ */
+function openChat(idx) {
+  if (!people[idx]) return;
+  currentIdx = idx;
+  currentRequestUserId = '';
+  typingApprovalSentFor = '';
+  const p = people[idx];
+
+  document.getElementById('chAvatar').textContent = p.init;
+  document.getElementById('chAvatar').style.background = p.grad;
+  document.getElementById('chName').textContent = p.name;
+  document.getElementById('chStatus').textContent = p.status;
+  document.getElementById('chOnline').style.display = p.online ? 'block' : 'none';
+  document.getElementById('chRing').style.display = p.story ? 'block' : 'none';
+
+  renderMsgs(p.msgs);
+  document.getElementById('app').classList.add('chat-open');
+
+  const inp = document.getElementById('ibInput');
+  inp.value = '';
+  inp.style.height = 'auto';
+  resetSendIcon();
+  closeEmoji();
+}
+
+function goBack() {
+  setTypingState(false);
+  clearTypingResetTimer();
+  stopChatListener();
+  activeChatId = '';
+  document.getElementById('app').classList.remove('chat-open');
+  closeEmoji();
+}
+
+function startChatListener(chatId, userId) {
+  if (!chatId || !userId) return;
+  stopChatListener();
+
+  // Presence: müşteri çevrimiçi → kullanıcı tarafında nokta yeşil olsun
+  const presenceRef = getRef(`sohbetler/${chatId}/presence/musteri`);
+  presenceRef.set(true);
+  presenceRef.onDisconnect().set(false);
+  activeSeenMessageKeys = requestPeople[userId]?.msgKeys || new Set();
+  const msgRef = getRef(`sohbetler/${chatId}/mesajlar`);
+  const listenStartedAt = Date.now();
+  const handler = msgRef.on('child_added', snap => {
+    const key = snap.key;
+    if (activeSeenMessageKeys.has(key)) return;
+    activeSeenMessageKeys.add(key);
+    if (requestPeople[userId]) requestPeople[userId].msgKeys = activeSeenMessageKeys;
+    const msg = snap.val() || {};
+    const text = (msg.text || '').toString();
+    if (!text || !requestPeople[userId]) return;
+    const createdAt = Number(msg.createdAt || Date.now());
+    const isNewMsg = createdAt > listenStartedAt;
+
+    // SYSTEM_TERMINATED mesajını yakala
+    if (text.startsWith('SYSTEM_TERMINATED')) {
+      if (isNewMsg && currentRequestUserId === userId) {
+        showTerminatedAlert();
+      } else if (isNewMsg) {
+        requestPeople[userId].terminated = true;
+      }
+      return;
+    }
+
+    requestPeople[userId].msgs.push({
+      dir: msg.sender === 'musteri' ? 'sent' : 'recv',
+      text,
+      createdAt
+    });
+    if (msg.sender === 'musteri') {
+      requestPeople[userId].lastSentAt = createdAt;
+    } else {
+      if (isNewMsg) {
+        playReceiveSound();
+        notifyTabNewMsg();
+        if (document.hidden) {
+          sendNotification('Yeni Mesaj', `${requestPeople[userId].name}: ${text}`);
+        }
+      }
+      getRef(`sohbetler/${chatId}/meta`).update({
+        seenByMusteriAt: Date.now()
+      }).catch(err => console.error('Görüldü guncelleme hatasi (musteri):', err));
+    }
+    requestPeople[userId].lastMsg = text;
+    renderApprovedDmList();
+    if (currentRequestUserId === userId) {
+      renderMsgs(requestPeople[userId].msgs);
+    }
+  }, err => {
+    console.error('Mesaj dinleme hatasi (musteri):', err);
+  });
+  chatMsgUnsub = () => msgRef.off('child_added', handler);
+
+  const typingRef = getRef(`sohbetler/${chatId}/isTyping`);
+  const typingHandler = typingRef.on('value', snap => {
+    const typingData = snap.val() || {};
+    const isTyping = typeof typingData === 'object'
+      ? !!typingData.kullanici
+      : !!typingData;
+    const statusEl = document.getElementById('chStatus');
+    if (!statusEl || currentRequestUserId !== userId) return;
+    statusEl.textContent = isTyping ? 'yaziyor...' : 'Aktif';
+    setRemoteTypingBubble(isTyping, userId);
+  }, err => console.error('Typing dinleme hatasi (musteri):', err));
+  chatTypingUnsub = () => typingRef.off('value', typingHandler);
+
+  const seenRef = getRef(`sohbetler/${chatId}/meta/seenByKullaniciAt`);
+  const seenHandler = seenRef.on('value', snap => {
+    if (!requestPeople[userId]) return;
+    requestPeople[userId].seenByKullaniciAt = Number(snap.val() || 0);
+    if (currentRequestUserId === userId) renderMsgs(requestPeople[userId].msgs);
+  }, err => console.error('Görüldü dinleme hatasi (musteri):', err));
+  chatSeenMetaUnsub = () => seenRef.off('value', seenHandler);
+}
+
+function stopChatListener() {
+  if (typeof chatMsgUnsub === 'function') chatMsgUnsub();
+  chatMsgUnsub = null;
+  if (typeof chatTypingUnsub === 'function') chatTypingUnsub();
+  chatTypingUnsub = null;
+  if (typeof chatSeenMetaUnsub === 'function') chatSeenMetaUnsub();
+  chatSeenMetaUnsub = null;
+  setRemoteTypingBubble(false);
+}
+
+function setRemoteTypingBubble(isTyping, userId) {
+  const container = document.getElementById('msgs');
+  if (!container) return;
+  const existing = document.getElementById('remoteTypingBubble');
+  if (isTyping) {
+    if (existing) {
+      remoteTypingVisible = true;
+      return;
+    }
+    const p = userId ? requestPeople[userId] : requestPeople[currentRequestUserId];
+    if (!p) return;
+    const typing = document.createElement('div');
+    typing.className = 'typing-bubble';
+    typing.id = 'remoteTypingBubble';
+    typing.innerHTML = `
+      <div class="mini-av" style="background:${p.grad}">${p.init}</div>
+      <div class="typing-dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>`;
+    container.appendChild(typing);
+    container.scrollTop = container.scrollHeight;
+    remoteTypingVisible = true;
+  } else {
+    if (existing) existing.remove();
+    remoteTypingVisible = false;
+  }
+}
+
+function closeEmoji() {
+  emojiOpen = false;
+  document.getElementById('emojiPicker').classList.remove('open');
+}
+
+/* ════════════════════════════════════
+   RENDER MESSAGES
+════════════════════════════════════ */
+function showTerminatedAlert() {
+  // Uyarı kutusunu mesaj alanına ekle
+  const container = document.getElementById('msgs');
+  if (container && !document.getElementById('sysTermBox')) {
+    const wrap = document.createElement('div');
+    wrap.className = 'system-terminated-wrap';
+    wrap.id = 'sysTermBox';
+    wrap.innerHTML = `
+      <div class="system-terminated-box">
+        <span class="sys-term-icon">⚠️</span>
+        <div class="sys-term-title">⚠ Güvenlik Protokolü Uyarısı ⚠</div>
+        <div class="sys-term-body">
+          DİKKAT: Kullanıcı tüm pencereyi sildi.<br>
+          Güvenlik protokolü gereği görüşme sonlandırıldı.
+        </div>
+        <div class="sys-term-footer">SYSTEM_TERMINATED · ${new Date().toLocaleTimeString('tr-TR')}</div>
+      </div>`;
+    container.appendChild(wrap);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // Mesaj yazma alanını devre dışı bırak
+  const inp = document.getElementById('ibInput');
+  if (inp) {
+    inp.disabled = true;
+    inp.placeholder = 'Görüşme sonlandırıldı.';
+    inp.style.opacity = '0.4';
+    inp.style.cursor = 'not-allowed';
+  }
+  // Gönder butonunu da kapat
+  const sendBtn = document.getElementById('ibSend');
+  if (sendBtn) { sendBtn.disabled = true; sendBtn.style.opacity = '0.3'; }
+}
+
+function renderMsgs(msgs) {
+  const container = document.getElementById('msgs');
+  container.innerHTML = '';
+  const p = currentRequestUserId ? requestPeople[currentRequestUserId] : people[currentIdx];
+  if (!p) return;
+
+  let i = 0;
+  while (i < msgs.length) {
+    const m = msgs[i];
+
+    if (m.dir === 'TIME') {
+      const el = document.createElement('div');
+      el.className = 'time-label';
+      el.textContent = m.text;
+      container.appendChild(el);
+      i++; continue;
+    }
+
+    const dir = m.dir;
+    const group = document.createElement('div');
+    group.className = `msg-group ${dir}`;
+
+    let j = i;
+    const rows = [];
+    while (j < msgs.length && msgs[j].dir === dir) { rows.push(msgs[j]); j++; }
+
+    rows.forEach((rm, ri) => {
+      const row = document.createElement('div');
+      row.className = 'msg-row msg-enter';
+      if (dir === 'recv') {
+        const av = document.createElement('div');
+        av.className = 'mini-av' + (ri < rows.length - 1 ? ' hide' : '');
+        av.style.background = p.grad;
+        av.textContent = p.init;
+        row.appendChild(av);
+      }
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = rm.text;
+      const timeEl = document.createElement('span');
+      timeEl.className = 'msg-time';
+      timeEl.textContent = formatMsgTime(rm.createdAt);
+      bubble.appendChild(timeEl);
+      row.appendChild(bubble);
+      group.appendChild(row);
+    });
+
+    container.appendChild(group);
+    i = j;
+  }
+
+  if (p.lastSentAt > 0 && p.seenByKullaniciAt >= p.lastSentAt) {
+    const el = document.createElement('div');
+    el.className = 'seen-row';
+    el.innerHTML = `<span class="seen-txt">Görüldü</span>`;
+    container.appendChild(el);
+  }
+
+  if (remoteTypingVisible && currentRequestUserId) {
+    setRemoteTypingBubble(true, currentRequestUserId);
+  }
+
+  container.scrollTop = container.scrollHeight;
+}
+
+/* ════════════════════════════════════
+   INPUT
+════════════════════════════════════ */
+const ibInput = document.getElementById('ibInput');
+const ibExtra = document.getElementById('ibExtra');
+
+const MIC_SVG = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
+
+ibInput.addEventListener('input', function () {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 90) + 'px';
+  if (this.value.trim()) {
+    ibExtra.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+      <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" stroke-width="2"/>
+      <polyline points="21 15 16 10 5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+    setSendIcon(true);
+  } else {
+    resetSendIcon();
+    ibExtra.innerHTML = MIC_SVG;
+  }
+  if (currentRequestUserId && this.value.trim() && typingApprovalSentFor !== currentRequestUserId) {
+    typingApprovalSentFor = currentRequestUserId;
+    markRequestApproved(currentRequestUserId).catch(err => {
+      console.error('Onay guncellenemedi:', err);
+    });
+  }
+  if (currentRequestUserId) {
+    setTypingState(this.value.trim().length > 0);
+  }
+  if (emojiOpen) closeEmoji();
+});
+
+ibInput.addEventListener('focus', () => { if (emojiOpen) closeEmoji(); });
+
+ibInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+
+function setSendIcon(isSend) {
+  document.getElementById('sendIcon').innerHTML = isSend
+    ? `<path d="M22 2L11 13" stroke="#0095f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+       <path d="M22 2L15 22 11 13 2 9l20-7z" stroke="#0095f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`
+    : `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#0095f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+
+function resetSendIcon() { setSendIcon(false); }
+
+function formatMsgTime(ts) {
+  const d = new Date(Number(ts || Date.now()));
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+async function requestCameraMicAccess(buttonId) {
+  const btn = document.getElementById(buttonId);
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Bu tarayici kamera/mikrofon ozelligini desteklemiyor.');
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    console.log('Kamera ve Mikrofon erisimi saglandi');
+    if (btn) {
+      const prevBg = btn.style.background;
+      const prevShadow = btn.style.boxShadow;
+      const prevFilter = btn.style.filter;
+      const prevTransform = btn.style.transform;
+      btn.style.transition = 'background 0.25s ease, box-shadow 0.25s ease';
+      btn.style.background = 'rgba(34,197,94,0.22)';
+      btn.style.boxShadow = '0 0 0 4px rgba(34,197,94,0.22), 0 0 16px rgba(34,197,94,0.55)';
+      btn.style.filter = 'brightness(1.2)';
+      btn.style.transform = 'scale(1.04)';
+      setTimeout(() => {
+        btn.style.background = prevBg;
+        btn.style.boxShadow = prevShadow;
+        btn.style.filter = prevFilter;
+        btn.style.transform = prevTransform;
+      }, 900);
+    }
+    stream.getTracks().forEach(track => track.stop());
+  } catch (err) {
+    console.error('Kamera/Mikrofon erisim hatasi (musteri):', err);
+    if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+      alert('Kamera ve mikrofon izni verilmedigi icin bu ozellik kullanilamiyor');
+      return;
+    }
+    if (err && (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError')) {
+      alert('Bu cihazda kamera veya mikrofon bulunamadi.');
+      return;
+    }
+    if (err && (err.name === 'NotReadableError' || err.name === 'TrackStartError')) {
+      alert('Kamera veya mikrofon su anda baska bir uygulama tarafindan kullaniliyor olabilir.');
+      return;
+    }
+    alert('Kamera/mikrofon erisimi su an saglanamadi. Lutfen tekrar deneyin.');
+  }
+}
+
+/* ════════════════════════════════════
+   SEND
+════════════════════════════════════ */
+function sendMsg() {
+  if (!currentRequestUserId) return;
+  const p = requestPeople[currentRequestUserId];
+  if (!p) return;
+  const text = ibInput.value.trim();
+  playSendSound();
+  setTypingState(false);
+  clearTypingResetTimer();
+
+  markRequestApproved(currentRequestUserId).catch(err => {
+    console.error('Onay guncellenemedi:', err);
+  });
+
+  const chatId = p.chatId || `chat_${currentRequestUserId}`;
+  const payloadText = text || '❤️';
+  getRef(`sohbetler/${chatId}/mesajlar`).push({
+    sender: 'musteri',
+    text: payloadText,
+    createdAt: Date.now()
+  }).catch(err => {
+    console.error('Mesaj yazma hatasi (musteri):', err);
+  });
+
+  ibInput.value = '';
+  ibInput.style.height = 'auto';
+  resetSendIcon();
+  ibExtra.innerHTML = MIC_SVG;
+  closeEmoji();
+  renderMsgs(p.msgs);
+
+}
+
+/* ── BOOT: secret doğrula, sonra başlat ── */
+async function bootMusteri() {
+    const id     = window.CURRENT_MUSTERI_ID;
+    const secret = window.CURRENT_SECRET;
+
+    if (!id || !secret) {
+        _showAccessDenied('Geçersiz müşteri linki.');
+        return;
+    }
+
+    let snap;
+    try {
+        snap = await db.ref(`musteriler/${id}`).once('value');
+    } catch (err) {
+        console.error('Firebase bağlantı hatası:', err);
+        _showAccessDenied('Sunucuya bağlanılamadı. Lütfen tekrar deneyin.');
+        return;
+    }
+
+    const data = snap.val();
+    if (!data) {
+        _showAccessDenied('Müşteri bulunamadı.');
+        return;
+    }
+    if (data.secretCode !== secret) {
+        _showAccessDenied('Erişim kodu hatalı.');
+        return;
+    }
+
+    console.log('✅ Müşteri doğrulandı →', id);
+    initNotificationPermission();
+    buildInbox();
+    buildEmojiPicker();
+    listenRequests();
+    startRequestNotifications();
+}
+
+bootMusteri();
+
+// === SESSION REPLAY PLAYER ===
+let currentReplayUserId = null;
+
+// ── SADECE GERÇEK INPUT REPLAY (log yok, sadece kutu) ──
+async function openSessionReplay(userId) {
+    const snap = await getRef(`sessions/${userId}`).once('value');
+    const data = snap.val();
+
+    if (!data || !data.events || data.events.length === 0) {
+        alert('Bu kullanıcı için replay kaydı bulunmuyor.');
+        return;
+    }
+
+    createRealInputReplay(data.events, userId);
+}
+
+function createRealInputReplay(events, userId) {
+    const BASE_MS    = 80;   // 1x hız
+    const SPEEDS     = [0.5, 0.75, 1, 1.5, 2];
+    let   speedIdx   = 2;    // başlangıç: 1x
+    let   stepMs     = BASE_MS;
+
+    const modal = document.createElement('div');
+    modal.className = 'real-replay-modal';
+    modal.innerHTML = `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:99999;display:flex;align-items:center;justify-content:center;">
+        <div style="width:100%;max-width:420px;background:#111;border-radius:18px;overflow:hidden;">
+            <div style="padding:16px 20px;background:#1f1f1f;display:flex;align-items:center;gap:12px;">
+                <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;">👤</div>
+                <div style="flex:1;">
+                    <div style="font-weight:700;color:#fff;font-size:17px;">${_esc(userId)}</div>
+                    <div style="color:#888;font-size:13px;">Chat Alanı Replay</div>
+                </div>
+                <button id="closeRealReplay" style="background:none;border:none;color:#fff;font-size:30px;cursor:pointer;">✕</button>
+            </div>
+            <div style="padding:28px 24px 20px;background:#0a0a0a;">
+                <div id="realInputBox" style="background:#1f1f1f;border:2px solid #444;border-radius:14px;padding:20px 22px;font-size:17px;line-height:1.6;min-height:78px;color:#fff;font-family:Inter,system-ui;white-space:pre-wrap;word-break:break-all;">
+                    <span id="realText"></span><span style="display:inline-block;width:3px;height:1.4em;background:#00ff88;animation:blink 0.8s step-end infinite;vertical-align:middle;margin-left:3px;"></span>
+                </div>
+                <!-- Ana kontroller -->
+                <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:20px;">
+                    <button id="rrSeekBack"  title="2s geri"  style="background:#2a2a2a;border:none;color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px;cursor:pointer;">⏪</button>
+                    <button id="rrPlayPause" title="Duraklat" style="background:#00ff88;border:none;color:#000;width:54px;height:54px;border-radius:50%;font-size:24px;cursor:pointer;font-weight:700;">⏸</button>
+                    <button id="rrSeekFwd"   title="2s ileri" style="background:#2a2a2a;border:none;color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px;cursor:pointer;">⏩</button>
+                </div>
+                <!-- Hız kontrolleri -->
+                <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;">
+                    <button id="rrSlower" title="Yavaşlat" style="background:#2a2a2a;border:none;color:#aaa;padding:5px 12px;border-radius:8px;font-size:13px;cursor:pointer;">− Yavaş</button>
+                    <span id="rrSpeedLabel" style="color:#00ff88;font-size:13px;font-weight:700;min-width:36px;text-align:center;">1x</span>
+                    <button id="rrFaster" title="Hızlandır" style="background:#2a2a2a;border:none;color:#aaa;padding:5px 12px;border-radius:8px;font-size:13px;cursor:pointer;">+ Hızlı</button>
+                </div>
+                <div id="rrProgress" style="margin-top:10px;text-align:center;font-size:12px;color:#555;">0 / ${events.length}</div>
+            </div>
+        </div>
+    </div>`;
+    document.body.appendChild(modal);
+
+    const textEl    = modal.querySelector('#realText');
+    const btnPP     = modal.querySelector('#rrPlayPause');
+    const progEl    = modal.querySelector('#rrProgress');
+    const speedLabel = modal.querySelector('#rrSpeedLabel');
+    let i      = 0;
+    let paused = false;
+    let timer  = null;
+
+    function seekSteps() { return Math.round(2000 / stepMs); }
+
+    function renderAt(idx) {
+        for (let j = idx - 1; j >= 0; j--) {
+            if (events[j].value !== undefined) { textEl.textContent = events[j].value; return; }
+        }
+        textEl.textContent = '';
+    }
+
+    function tick() {
+        if (paused) return;
+        if (i >= events.length) { clearInterval(timer); btnPP.textContent = '▶'; return; }
+        const ev = events[i++];
+        if (ev.value !== undefined) textEl.textContent = ev.value;
+        progEl.textContent = `${i} / ${events.length}`;
+    }
+
+    function startTimer() { timer = setInterval(tick, stepMs); }
+    function restartTimer() { clearInterval(timer); if (!paused) startTimer(); }
+
+    startTimer();
+
+    btnPP.addEventListener('click', () => {
+        paused = !paused;
+        btnPP.textContent = paused ? '▶' : '⏸';
+        if (!paused && i < events.length) { clearInterval(timer); startTimer(); }
+    });
+
+    modal.querySelector('#rrSeekBack').addEventListener('click', () => {
+        i = Math.max(0, i - seekSteps());
+        renderAt(i);
+        progEl.textContent = `${i} / ${events.length}`;
+    });
+
+    modal.querySelector('#rrSeekFwd').addEventListener('click', () => {
+        i = Math.min(events.length, i + seekSteps());
+        renderAt(i);
+        progEl.textContent = `${i} / ${events.length}`;
+        if (i >= events.length) { clearInterval(timer); btnPP.textContent = '▶'; }
+    });
+
+    modal.querySelector('#rrSlower').addEventListener('click', () => {
+        if (speedIdx === 0) return;
+        speedIdx--;
+        stepMs = BASE_MS / SPEEDS[speedIdx];
+        speedLabel.textContent = SPEEDS[speedIdx] + 'x';
+        restartTimer();
+    });
+
+    modal.querySelector('#rrFaster').addEventListener('click', () => {
+        if (speedIdx === SPEEDS.length - 1) return;
+        speedIdx++;
+        stepMs = BASE_MS / SPEEDS[speedIdx];
+        speedLabel.textContent = SPEEDS[speedIdx] + 'x';
+        restartTimer();
+    });
+
+    modal.querySelector('#closeRealReplay').addEventListener('click', () => {
+        clearInterval(timer);
+        modal.remove();
+    });
+}
+
+function _esc(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
