@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Hizmet Sözleşmesi — ChatAnonim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --bg:         #0d1117;
+            --surface:    #161b22;
+            --surface2:   #1c2128;
+            --border:     #2a2f3a;
+            --border2:    #30363d;
+            --text:       #e6edf3;
+            --text2:      #8b949e;
+            --text3:      #6e7681;
+            --accent:     #2f81f7;
+            --accent-soft: rgba(47,129,247,0.12);
+            --warn:       #f59e0b;
+            --danger:     #f85149;
+            --danger-soft: rgba(248, 81, 73, 0.08);
+        }
+
+        html, body {
+            background: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        /* ── HEADER ── */
+        .doc-header {
+            border-bottom: 1px solid var(--border2);
+            padding-bottom: 28px;
+            margin-bottom: 36px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .brand-logo {
+            width: 42px; height: 42px;
+            background: var(--accent);
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+
+        .brand-sub {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text3);
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+
+        .doc-title {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -0.9px;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .doc-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            font-size: 13px;
+            color: var(--text3);
+        }
+
+        .doc-meta span strong {
+            color: var(--text2);
+            font-weight: 600;
+        }
+
+        /* ── CONTENT ── */
+        h2 {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text);
+            margin: 40px 0 14px;
+            padding-top: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: baseline;
+        }
+
+        h2 .num {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.2px;
+            min-width: 26px;
+        }
+
+        p {
+            font-size: 14.5px;
+            color: var(--text);
+            margin: 12px 0;
+        }
+
+        p.lead {
+            color: var(--text2);
+            font-size: 14px;
+        }
+
+        ul, ol {
+            padding-left: 22px;
+            margin: 10px 0;
+        }
+
+        li {
+            font-size: 14.5px;
+            margin: 6px 0;
+            color: var(--text);
+        }
+
+        li strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .clause {
+            margin: 10px 0;
+            font-size: 14.5px;
+        }
+
+        .clause-label {
+            display: inline-block;
+            font-weight: 600;
+            color: var(--accent);
+            margin-right: 6px;
+            min-width: 32px;
+        }
+
+        .subclause {
+            padding-left: 18px;
+            margin: 4px 0;
+            font-size: 14px;
+            color: var(--text2);
+        }
+
+        .placeholder {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px dashed var(--warn);
+            border-radius: 5px;
+            color: var(--warn);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .info-box {
+            margin: 30px 0;
+            padding: 16px 18px;
+            background: var(--accent-soft);
+            border-left: 3px solid var(--accent);
+            border-radius: 6px;
+            font-size: 13.5px;
+            color: var(--text);
+        }
+
+        .info-box strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Critical kloz kutusu — kilit sorumluluk maddeleri için */
+        .critical-box {
+            margin: 14px 0;
+            padding: 16px 18px;
+            background: var(--danger-soft);
+            border-left: 3px solid var(--danger);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .critical-box strong {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .critical-box .stamp {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .divider {
+            border: none;
+            height: 1px;
+            background: var(--border2);
+            margin: 44px 0 28px;
+        }
+
+        .doc-footer {
+            font-size: 12.5px;
+            color: var(--text3);
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 640px) {
+            .page { padding: 28px 18px 60px; }
+            .doc-title { font-size: 26px; }
+            h2 { font-size: 17px; }
+            p, li, .clause { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<main class="page">
+
+    <header class="doc-header">
+        <div class="brand">
+            <div class="brand-logo">🔒</div>
+            <div>
+                <span class="brand-name">ChatAnonim</span>
+                <span class="brand-sub">chatanonim.site</span>
+            </div>
+        </div>
+        <h1 class="doc-title">Müşteri Hizmet Sözleşmesi</h1>
+        <div class="doc-meta">
+            <span><strong>Yürürlük Tarihi:</strong> <span class="placeholder">[GG.AA.YYYY]</span></span>
+            <span><strong>Sürüm:</strong> 1.0</span>
+            <span><strong>Nitelik:</strong> Bağlayıcı Sözleşme</span>
+        </div>
+    </header>
+
+    <p class="lead">
+        İşbu Müşteri Hizmet Sözleşmesi ("<strong>Sözleşme</strong>"); ChatAnonim platformunun sahibi ve işleticisi ile Platformu Müşteri sıfatıyla kullanacak gerçek veya tüzel kişi arasında akdedilen bağlayıcı bir ticari sözleşmedir. Müşteri; ödemeyi gerçekleştirmek, erişim kodunu kullanmak veya Platformun yönetim arayüzüne giriş yapmak suretiyle işbu Sözleşmeyi <strong>bütünüyle</strong> ve <strong>kayıtsız şartsız</strong> okuduğunu, anladığını ve kabul ettiğini beyan ve taahhüt eder.
+    </p>
+
+    <!-- 1. TARAFLAR -->
+    <h2><span class="num">1.</span> Taraflar</h2>
+    <p>
+        İşbu Sözleşme; bir tarafta <strong>chatanonim.site</strong> alan adı üzerinden yayın yapan ChatAnonim markalı platformun sahibi ve işleticisi sıfatıyla
+        <span class="placeholder">[İŞLETİCİ AD-SOYAD / TİCARİ UNVAN]</span>,
+        adresi <span class="placeholder">[AÇIK ADRES]</span>
+        ("<strong>İşletici</strong>") ile diğer tarafta Platformu Müşteri sıfatıyla kullanacak gerçek veya tüzel kişi
+        ("<strong>Müşteri</strong>") arasında kurulmuştur.
+    </p>
+    <p>
+        Taraflar; işbu Sözleşme ile karşılıklı olarak belirlenen hak, yükümlülük ve sorumluluklara tam uyum göstermeyi kabul, beyan ve taahhüt eder.
+    </p>
+
+    <!-- 2. TANIMLAR -->
+    <h2><span class="num">2.</span> Tanımlar</h2>
+    <p>İşbu Sözleşme kapsamında aşağıdaki kavramlar, karşılarında belirtilen anlamları ifade eder:</p>
+    <ul>
+        <li><strong>Platform:</strong> chatanonim.site alan adı üzerinden yayın yapan ChatAnonim markalı internet sitesi ve tüm ara yüzleri.</li>
+        <li><strong>İşletici:</strong> Platformun sahibi ve yöneticisi olan gerçek/tüzel kişi.</li>
+        <li><strong>Müşteri:</strong> İşletici tarafından kendisine özel erişim bağlantısı ve gizli erişim kodu tahsis edilmiş, Platformun yönetim arayüzünü kullanma yetkisi bulunan gerçek veya tüzel kişi.</li>
+        <li><strong>Kullanıcı (Takipçi):</strong> Müşteriye ait herkese açık paylaşım bağlantısı üzerinden Platforma erişip Müşteriye sohbet talebi ileten üçüncü kişi.</li>
+        <li><strong>Hizmet:</strong> İşletici tarafından Müşteriye sunulan, sohbet taleplerinin karşılanmasına, Kullanıcılarla mesajlaşmaya ve sohbet talebinin kaynağına ilişkin teknik verilerin Müşteriye iletilmesine imkân tanıyan dijital hizmet paketi.</li>
+        <li><strong>Teknik Veriler:</strong> Kullanıcının Platforma bağlandığı IP adresi, IP'den türetilen yaklaşık konum bilgisi (ülke/şehir/ilçe) ve cihaz bilgileri (cihaz türü, işletim sistemi, tarayıcı vb.).</li>
+        <li><strong>Erişim Bilgileri:</strong> Müşteriye özel tahsis edilen yönetim linki ve gizli erişim kodu.</li>
+        <li><strong>KVKK:</strong> 6698 sayılı Kişisel Verilerin Korunması Kanunu ve ilgili ikincil mevzuat.</li>
+    </ul>
+
+    <!-- 3. SÖZLEŞMENİN KONUSU -->
+    <h2><span class="num">3.</span> Sözleşmenin Konusu</h2>
+    <p>
+        İşbu Sözleşmenin konusu; İşletici tarafından Müşteriye sunulacak Hizmetin kapsamı, şartları, tarafların karşılıklı hak, yükümlülük ve sorumlulukları ile <strong>Müşterinin Hizmeti kullanması nedeniyle üstleneceği hukuki sorumlulukların</strong> belirlenmesidir.
+    </p>
+    <p>
+        Müşteri; işbu Sözleşmeyi kabul etmekle birlikte, Hizmetin doğası gereği alacağı Teknik Veriler bakımından KVKK kapsamında doğacak tüm yükümlülük ve sorumlulukları <strong>peşinen, tam ve sınırsız şekilde</strong> üstlendiğini beyan, kabul ve taahhüt eder.
+    </p>
+
+    <!-- 4. HİZMET TANIMI VE ÜCRET -->
+    <h2><span class="num">4.</span> Hizmet Tanımı ve Ücret</h2>
+
+    <div class="clause"><span class="clause-label">4.1.</span> Hizmet kapsamında Müşteriye; özel erişim linki, gizli erişim kodu, yönetim paneli, Kullanıcılardan gelen sohbet taleplerini kabul/red etme, Kullanıcılarla yazılı mesajlaşma ve görsel paylaşımı ile sohbet talebinin kaynağına ait Teknik Verilerin görüntülenmesi imkânları sunulur.</div>
+
+    <div class="clause"><span class="clause-label">4.2.</span> Hizmet, <span class="placeholder">[ÜCRET TUTARI]</span> bedel karşılığında <span class="placeholder">[ÖDEME PERİYODU / TEK SEFERLİK]</span> olarak sunulmaktadır. Ücretlendirmeye ilişkin güncel detaylar, Müşteriye Platform üzerinden veya yazılı olarak bildirilir.</div>
+
+    <div class="clause"><span class="clause-label">4.3.</span> Ücret, Müşteri tarafından peşin olarak ödenir. Ödenmiş ücret <strong>iade edilmez</strong>. Müşterinin Sözleşmeyi feshetmesi, Hizmeti kullanmaması veya İşletici tarafından Sözleşmenin haklı nedenle feshedilmesi, Müşteriye herhangi bir iade hakkı doğurmaz.</div>
+
+    <div class="clause"><span class="clause-label">4.4.</span> İşletici; Hizmet bedelini, içeriğini, kapsamını ve sunum biçimini tek taraflı olarak değiştirme, yeni özellikler ekleme veya mevcut özellikleri kaldırma hakkını saklı tutar.</div>
+
+    <div class="clause"><span class="clause-label">4.5.</span> Müşteri; Hizmet bedelini ödemekle, İşleticinin yalnızca teknik altyapı ve dijital iletişim aracı sağladığını; taraflar arasındaki mesajlaşmanın içeriğinden, sonuçlarından ve Kullanıcılarla kurulan iletişimden İşleticinin hiçbir şekilde sorumlu olmadığını kabul eder.</div>
+
+    <!-- 5. MÜŞTERİNİN KABUL VE FERAGAT BEYANI -->
+    <h2><span class="num">5.</span> Müşterinin Kabul ve Feragat Beyanı</h2>
+
+    <div class="critical-box">
+        <span class="stamp">Kritik Kabul Beyanı</span><br>
+        Müşteri; Platformu kullanmakla ve işbu Sözleşmeyi kabul etmekle birlikte, aşağıda sayılan hususları <strong>kendi özgür iradesi</strong>, <strong>açık muvafakati</strong> ve <strong>tam bilgilendirme</strong> sonrasında kayıtsız şartsız kabul ettiğini beyan eder.
+    </div>
+
+    <div class="clause"><span class="clause-label">5.1.</span> Müşteri; Platform üzerinden kendisine iletilecek Teknik Verileri (IP adresi, yaklaşık konum bilgisi ve cihaz bilgileri dahil) görüntülemeyi, işlemeyi ve bu verileri yönetim paneli üzerinden elde etmeyi <strong>kendi özgür iradesiyle</strong>, <strong>talep ederek</strong> ve <strong>tam bilgilendirme sonrasında</strong> kabul ettiğini beyan eder.</div>
+
+    <div class="clause"><span class="clause-label">5.2.</span> Müşteri; Teknik Verilerin kendisine iletilmesinin Hizmetin ayrılmaz bir parçası olduğunu, bu verilerin alımı için ayrı bir talimat vermesine gerek bulunmadığını ve söz konusu aktarımın Platformun işleyiş modelinin doğal sonucu olduğunu bilerek Sözleşmeyi imzaladığını kabul eder.</div>
+
+    <div class="clause"><span class="clause-label">5.3.</span> Müşteri; kendisine iletilen Teknik Verilerin toplanması, kendisine aktarılması, tarafından işlenmesi, saklanması, kullanılması, silinmesi veya üçüncü kişilere aktarılması dahil olmak üzere <strong>söz konusu verilere ilişkin tüm işleme faaliyetlerinden yalnızca ve münhasıran kendisinin sorumlu</strong> olduğunu kabul ve taahhüt eder.</div>
+
+    <div class="critical-box">
+        <span class="stamp">İbra ve Feragat</span><br>
+        <div class="clause" style="margin-top:4px;"><span class="clause-label">5.4.</span> Müşteri; Teknik Verilerin kendisine aktarılması, işlenmesi veya bunlarla bağlantılı olarak doğabilecek her türlü KVKK ihlali, idari para cezası, tazminat talebi, dava ve hukuki süreç bakımından; İşleticinin kasıt veya ağır ihmali hariç olmak üzere, <strong>hukuken mümkün olan en geniş ölçüde</strong> İşleticiyi <strong>tamamen, kayıtsız şartsız ve geri alınamaz şekilde ibra ettiğini</strong>; bu yöndeki her türlü talep ve dava hakkından <strong>peşinen feragat ettiğini</strong> beyan ve taahhüt eder.</div>
+    </div>
+
+    <div class="clause"><span class="clause-label">5.5.</span> Müşteri; işbu 5. maddedeki beyanların, 6098 sayılı Türk Borçlar Kanunu anlamında <strong>bağımsız ibra ve feragat beyanı</strong> niteliğinde olduğunu ve hiçbir şekilde geri alınamayacağını kabul eder.</div>
+
+    <div class="clause"><span class="clause-label">5.6.</span> Bu maddedeki beyan ve feragat; İşleticinin kasten veya ağır ihmaliyle sebep olduğu haller hariç olmak üzere, tüm hukuki ilişkiler bakımından geçerlidir ve Sözleşmenin sona ermesinden sonra da hüküm ifade etmeye devam eder.</div>
+
+    <!-- 6. TEKNİK VERİLERİN ALINMASI VE KULLANIM KURALLARI -->
+    <h2><span class="num">6.</span> Teknik Verilerin Alınması ve Kullanım Kuralları</h2>
+
+    <div class="clause"><span class="clause-label">6.1.</span> Platform; sohbet talebinde bulunan Kullanıcının IP adresi, yaklaşık konum ve cihaz bilgilerini, Hizmetin doğal sonucu olarak Müşterinin yönetim paneline aktarır. Müşteri, söz konusu aktarımın gerçekleşeceğini önceden bilerek Sözleşmeyi kabul etmiştir.</div>
+
+    <div class="clause"><span class="clause-label">6.2.</span> Müşteri; aldığı Teknik Verileri yalnızca aşağıdaki meşru amaçlarla kullanmayı taahhüt eder:</div>
+    <ul>
+        <li>Sohbet talebini değerlendirmek,</li>
+        <li>Kötüye kullanım veya taciz şüphesi hâlinde güvenliğini sağlamak,</li>
+        <li>Hukuki bir uyuşmazlıkta delil olarak kullanmak.</li>
+    </ul>
+
+    <div class="clause"><span class="clause-label">6.3.</span> Müşteri; Teknik Verileri <strong>hiçbir surette</strong>:</div>
+    <ul>
+        <li>Kullanıcıyı fiziksel olarak takip etmek, tehdit etmek veya tacize uğratmak,</li>
+        <li>Kullanıcının rızası dışında üçüncü kişilerle paylaşmak,</li>
+        <li>Profil oluşturmak veya ticari amaçla sınıflandırmak,</li>
+        <li>Herhangi bir yasa dışı, ahlâka aykırı veya suç teşkil edici amaçla değerlendirmek</li>
+    </ul>
+    <p>için kullanmayacağını kabul, beyan ve taahhüt eder.</p>
+
+    <div class="clause"><span class="clause-label">6.4.</span> Müşteri; Teknik Verilerin Platform ara yüzünde görüntülenmesi veya kendi cihazına indirilmesi dahil her türlü işleme faaliyeti sonrasında doğabilecek her türlü hukuki, cezai ve mali sorumluluğun <strong>münhasıran kendisine ait</strong> olduğunu kabul eder.</div>
+
+    <div class="clause"><span class="clause-label">6.5.</span> İşletici; Müşterinin işbu maddeye aykırı davrandığına dair makul bir şüphe oluşması hâlinde, Müşterinin Hizmete erişimini derhal ve herhangi bir bildirim yapma zorunluluğu olmaksızın askıya alma veya sonlandırma hakkına sahiptir.</div>
+
+    <!-- 7. MÜŞTERİNİN KVKK VE SORUMLULUK YÜKÜMLÜLÜKLERİ -->
+    <h2><span class="num">7.</span> Müşterinin KVKK ve Sorumluluk Yükümlülükleri</h2>
+
+    <div class="critical-box">
+        <span class="stamp">Bağımsız Veri Sorumlusu</span><br>
+        Müşteri; kendisine iletilen Teknik Verilerin 6698 sayılı KVKK anlamında <strong>kişisel veri</strong> niteliğinde olduğunu ve bu verileri elde ettiği andan itibaren KVKK kapsamında <strong>bağımsız veri sorumlusu</strong> (veya şartları oluştuğu hâllerde müşterek veri sorumlusu) sıfatını kazandığını kabul ve beyan eder.
+    </div>
+
+    <div class="clause"><span class="clause-label">7.1.</span> Müşteri; söz konusu verilerin işlenmesinden, saklanmasından, güvenliğinin sağlanmasından, silinmesinden, anonimleştirilmesinden ve KVKK'ya uyumlu tüm süreçlerin yürütülmesinden <strong>münhasıran</strong> sorumludur.</div>
+
+    <div class="clause"><span class="clause-label">7.2.</span> Müşteri; veri sorumlusu sıfatıyla başta aşağıdaki yükümlülükler olmak üzere KVKK'nın ve ilgili ikincil mevzuatın tüm hükümlerine tam uyum göstermeyi taahhüt eder:</div>
+    <ul>
+        <li><strong>Aydınlatma Yükümlülüğü</strong> (KVKK m.10): Verileri elde ettiği ilgili kişileri, kendi faaliyetleri kapsamındaki işleme amaçları hakkında aydınlatmak,</li>
+        <li><strong>Açık Rıza Yükümlülüğü</strong> (KVKK m.5): Gerekli hâllerde ilgili kişiden açık rıza almak,</li>
+        <li><strong>Veri Güvenliği</strong> (KVKK m.12): Verilere yetkisiz erişimi ve ifşayı önleyecek gerekli teknik ve idari tedbirleri almak,</li>
+        <li><strong>Saklama ve İmha</strong> (KVKK m.7): Süresi dolan veya amacı ortadan kalkan verileri ilgili mevzuat çerçevesinde silmek, yok etmek veya anonimleştirmek,</li>
+        <li><strong>VERBİS Kaydı</strong>: Kanunen zorunlu olduğu hâllerde Veri Sorumluları Siciline kayıt yaptırmak,</li>
+        <li><strong>İhlal Bildirimi</strong> (KVKK m.12/5): Kendisinin sebep olduğu veri ihlallerini Kişisel Verileri Koruma Kurumu'na ve ilgili kişilere en kısa sürede bildirmek.</li>
+    </ul>
+
+    <div class="clause"><span class="clause-label">7.3.</span> Müşteri; kendisi tarafından veya kendi alanında gerçekleşen veri ihlalleri, veri sızıntıları, yetkisiz paylaşımlar ve KVKK aykırılıklarından <strong>yalnızca ve münhasıran kendisinin</strong> sorumlu olduğunu; bu hususlarda İşleticiye herhangi bir sorumluluk atfedilemeyeceğini kabul eder.</div>
+
+    <div class="clause"><span class="clause-label">7.4.</span> Kişisel Verileri Koruma Kurulu'nun, mahkemelerin veya diğer yargı mercilerinin; Müşterinin işleme faaliyetleri nedeniyle İşleticiye yönelik herhangi bir soruşturma, inceleme, yaptırım veya dava süreci başlatması hâlinde; Müşteri, bu kapsamda İşletici adına savunma yapmayı, tüm masrafları karşılamayı ve İşleticiye kesilen her türlü <strong>idari para cezasını faizleriyle birlikte derhal ödemeyi</strong> gayrikabili rücu şekilde kabul ve taahhüt eder.</div>
+
+    <div class="clause"><span class="clause-label">7.5.</span> Müşteri; Teknik Veriler dışında, Kullanıcının kendisiyle paylaştığı mesaj içerikleri ve görseller bakımından da <strong>bağımsız veri sorumlusu</strong> sıfatını haiz olduğunu ve bu verilere ilişkin KVKK yükümlülüklerinin tamamının kendisine ait olduğunu kabul eder.</div>
+
+    <!-- 8. YASAKLI FİİLLER VE İHLAL SONUÇLARI -->
+    <h2><span class="num">8.</span> Yasaklı Fiiller ve İhlal Sonuçları</h2>
+    <p>Müşteri; aşağıdaki fiilleri gerçekleştirmeyeceğini kesinlikle kabul ve taahhüt eder:</p>
+
+    <div class="clause"><span class="clause-label">8.1.</span> Platformu; yasadışı, ahlâka aykırı, suç teşkil eden veya üçüncü kişilerin haklarını ihlal edici şekilde kullanmak.</div>
+
+    <div class="clause"><span class="clause-label">8.2.</span> Kullanıcılara yönelik hakaret, tehdit, taciz, şantaj, küçük düşürme, ayrımcılık, nefret söylemi, psikolojik baskı veya manipülasyon içeren iletişim kurmak.</div>
+
+    <div class="clause"><span class="clause-label">8.3.</span> Kullanıcılardan elde ettiği Teknik Verileri onların rızası dışında üçüncü kişilerle paylaşmak, satmak, takas etmek veya ticari amaçla kullanmak.</div>
+
+    <div class="clause"><span class="clause-label">8.4.</span> Kullanıcıları fiziksel olarak takip etmek, gerçek hayatta rahatsız etmek, dijital/fiziksel tehditlerde bulunmak veya mahremiyet ihlali yapmak.</div>
+
+    <div class="clause"><span class="clause-label">8.5.</span> Platforma yetkisiz erişim sağlamaya çalışmak, yönetim paneli kodlarını paylaşmak, tersine mühendislik yapmak veya güvenlik açıklarını istismar etmek.</div>
+
+    <div class="clause"><span class="clause-label">8.6.</span> Erişim Bilgilerini üçüncü kişilerle paylaşmak, devretmek veya ticari olarak kullanıma sunmak.</div>
+
+    <div class="clause"><span class="clause-label">8.7.</span> Platformu, anonimlik veya güvenlik vaadi içeren yanıltıcı içeriklerle tanıtmak veya pazarlamak.</div>
+
+    <div class="clause"><span class="clause-label">8.8.</span> <strong>İhlal Sonuçları:</strong> Yukarıdaki yasaklara aykırılık hâlinde İşletici; önceden bildirim yapma zorunluluğu olmaksızın Müşterinin hesabını askıya alma, Hizmetini kalıcı olarak sonlandırma, ödenen ücreti iade etmeme ve 9. madde kapsamında tazminat talep etme haklarını birlikte ve/veya ayrı ayrı kullanabilir. Bu fiillerden doğan her türlü hukuki, cezai ve mali sorumluluk yalnızca Müşteriye aittir.</div>
+
+    <!-- 9. TAZMİNAT YÜKÜMLÜLÜĞÜ -->
+    <h2><span class="num">9.</span> Tazminat Yükümlülüğü</h2>
+
+    <div class="critical-box">
+        <span class="stamp">Tam Tazminat Yükümlülüğü</span><br>
+        Müşteri; işbu Sözleşmeye aykırı davranması, aldığı verileri kötüye kullanması, KVKK hükümlerini ihlal etmesi veya üçüncü kişilerin haklarını ihlal etmesi nedeniyle İşleticinin uğrayacağı <strong>her türlü doğrudan ve dolaylı zararı</strong>, <strong>derhal, nakden ve defaten</strong> ve <strong>ilk talepte</strong> tazmin edeceğini gayrikabili rücu şekilde kabul ve taahhüt eder.
+    </div>
+
+    <div class="clause"><span class="clause-label">9.1.</span> Müşterinin tazmin yükümlülüğü aşağıdaki kalemleri kapsar (sayılanlarla sınırlı olmamak üzere):</div>
+    <ul>
+        <li>Kişisel Verileri Koruma Kurulu tarafından İşleticiye uygulanan her türlü <strong>idari para cezası — faizleriyle birlikte</strong>,</li>
+        <li>Üçüncü kişiler, ilgili kişiler veya kamu kurumları tarafından İşleticiye yöneltilen <strong>tüm tazminat talepleri</strong>,</li>
+        <li>Açılan veya açılabilecek <strong>hukuki, idari veya cezai davaların tüm masrafları</strong>,</li>
+        <li><strong>Avukatlık ücretleri</strong> (vekalet ücreti, karşı vekalet ücreti, danışmanlık ücreti dahil),</li>
+        <li>Mahkeme harçları, keşif ve bilirkişi ücretleri, noter masrafları ve icra takip giderleri,</li>
+        <li>İşleticinin uğrayacağı <strong>ticari itibar ve marka değeri kaybı</strong>,</li>
+        <li>Platformun geçici olarak durdurulması veya faaliyetin etkilenmesi nedeniyle oluşacak <strong>iş kaybı ve fırsat kaybı</strong>,</li>
+        <li>Ticari faaliyetin etkilenmesi nedeniyle İşleticinin uğrayacağı <strong>her türlü dolaylı zarar</strong>.</li>
+    </ul>
+
+    <div class="clause"><span class="clause-label">9.2.</span> İşletici; zararını belgeleme hususunda faturalar, mahkeme kararları, KVKK Kurul kararları, avukat beyanları ve diğer yazılı belgelerle yetinme hakkına sahiptir. Müşteri; zararın varlığını ve miktarını itiraz etmeksizin kabul eder.</div>
+
+    <div class="clause"><span class="clause-label">9.3.</span> Müşteri; tazminat tutarını İşleticinin ilk yazılı talebini takiben <strong>15 (on beş) gün</strong> içinde ödemeyi taahhüt eder. Bu süre içinde ödeme yapılmaması hâlinde, avans faiz oranının <strong>iki katı</strong> oranında temerrüt faizi işletilir.</div>
+
+    <div class="clause"><span class="clause-label">9.4.</span> İşleticinin tazminat talep hakkı; Sözleşmenin feshinden, Hizmetin sonlandırılmasından veya Müşterinin hesabının kapatılmasından etkilenmeksizin devam eder.</div>
+
+    <div class="clause"><span class="clause-label">9.5.</span> Müşteri, işbu tazminat yükümlülüğünün 6098 sayılı Türk Borçlar Kanunu kapsamında cezai şart niteliğinde olduğunu ve tacir sıfatını haiz olması hâlinde hakimin indirim yetkisine karşı önceden itiraz ettiğini kabul eder.</div>
+
+    <!-- 10. SORUMLULUĞUN SINIRLANDIRILMASI VE FERAGAT -->
+    <h2><span class="num">10.</span> Sorumluluğun Sınırlandırılması ve Feragat</h2>
+
+    <div class="critical-box">
+        <span class="stamp">Sorumluluk Reddi</span><br>
+        İşletici; Platformu <strong>"olduğu gibi"</strong> (<em>as-is</em>) ve <strong>"mevcut haliyle"</strong> (<em>as-available</em>) sunmakta olup; Hizmetin kesintisiz, hatasız, güvenli veya Müşterinin beklentilerini karşılayacak nitelikte olacağına dair zımni ya da açık <strong>hiçbir taahhütte bulunmaz</strong>.
+    </div>
+
+    <div class="clause"><span class="clause-label">10.1.</span> Müşteri; Hizmeti kullanmakla birlikte aşağıda sayılan tüm riskleri <strong>bizzat ve münhasıran</strong> üstlendiğini beyan ve kabul eder:</div>
+    <ul>
+        <li>Teknik Verilerin yanlış, eksik veya hatalı olması,</li>
+        <li>Teknik Verilerin Müşterinin kendi alanında kötüye kullanılması,</li>
+        <li>Müşterinin sebep olduğu KVKK ihlallerinin doğuracağı tüm hukuki sonuçlar,</li>
+        <li>Verilerin Müşterinin sistem ve cihazlarından üçüncü kişilerce ele geçirilmesi,</li>
+        <li>Erişim Bilgilerinin Müşterinin ihmali sonucu üçüncü kişilerin eline geçmesi,</li>
+        <li>Platformun herhangi bir nedenle kesintiye uğraması, mesajların iletilememesi veya gecikmesi,</li>
+        <li>Üçüncü taraf altyapı/servis sağlayıcılarının yaşadığı kesinti veya ihlaller,</li>
+        <li>Mücbir sebep veya İşleticinin kontrolü dışındaki olaylar.</li>
+    </ul>
+
+    <div class="clause"><span class="clause-label">10.2.</span> Müşteri; İşleticiyi — <strong>kasıt veya ağır ihmali hariç</strong> olmak üzere — yukarıda sayılan ve bunlarla sınırlı olmayan tüm hâllerde her türlü hukuki, idari, cezai ve mali sorumluluktan <strong>peşinen, kayıtsız şartsız ve gayrikabili rücu şekilde ibra ettiğini</strong> kabul, beyan ve taahhüt eder.</div>
+
+    <div class="clause"><span class="clause-label">10.3.</span> İşleticinin Müşteriye karşı her türlü sebeple doğabilecek toplam sorumluluğu; her hâlükârda Müşterinin son <strong>3 (üç) ay</strong> içinde ödediği toplam Hizmet bedelinin <strong>6 (altı) katı</strong> ile sınırlıdır. Bu sınırlama; İşleticinin kasıt veya ağır ihmali hariç olmak üzere tüm zararları kapsar.</div>
+
+    <div class="clause"><span class="clause-label">10.4.</span> İşletici; hiçbir şart altında Müşterinin dolaylı zararlarından, kâr kaybından, itibar kaybından, veri kaybından veya iş fırsatı kaybından sorumlu tutulamaz.</div>
+
+    <div class="clause"><span class="clause-label">10.5.</span> Müşteri; Platformun işleyişine, Hizmetin içeriğine veya Teknik Verilerin niteliğine ilişkin beklentilerinin karşılanmaması hâlinde İşleticiye karşı tazminat, iade, cayma veya benzer nitelikte hiçbir talep ileri süremeyeceğini peşinen kabul eder.</div>
+
+    <!-- 11. SÖZLEŞMENİN FESHİ -->
+    <h2><span class="num">11.</span> Sözleşmenin Feshi</h2>
+
+    <div class="clause"><span class="clause-label">11.1.</span> İşletici; aşağıdaki hâllerde Sözleşmeyi <strong>tek taraflı, tazminatsız ve bildirimsiz</strong> olarak derhal feshetme hakkına sahiptir:</div>
+    <ul>
+        <li>Müşterinin Sözleşmeye, yürürlükteki mevzuata veya hukuka aykırı davranması,</li>
+        <li>Müşterinin 6. madde kapsamındaki yasaklı fiilleri işlemesi,</li>
+        <li>Müşterinin 7. madde kapsamındaki KVKK yükümlülüklerine uymaması,</li>
+        <li>Müşteri aleyhine herhangi bir resmi soruşturma, şikayet veya dava açılması,</li>
+        <li>İşleticinin ticari itibarını zedeleyen her türlü davranış,</li>
+        <li>Erişim Bilgilerinin paylaşılması veya kötüye kullanılması,</li>
+        <li>Ödemenin yapılmaması veya geri çekilmesi.</li>
+    </ul>
+
+    <div class="clause"><span class="clause-label">11.2.</span> Fesih hâlinde Müşterinin ödediği ücret <strong>iade edilmez</strong>; işlemiş ve işleyecek her türlü tazminat ve ceza koşulu hakkı İşleticide saklı kalır.</div>
+
+    <div class="clause"><span class="clause-label">11.3.</span> Müşteri; işbu Sözleşmeyi ancak yazılı bildirimle ve işlemiş ücret haklarından feragat etmek suretiyle feshedebilir. Fesih, ödenen ücretin iadesi sonucunu doğurmaz.</div>
+
+    <div class="clause"><span class="clause-label">11.4.</span> İşletici; herhangi bir gerekçe göstermeksizin, ticari veya teknik nedenlerle Sözleşmeyi dilediği zaman feshetme hakkını saklı tutar. Bu hâlde dahi Müşteriye herhangi bir tazminat ödeme yükümlülüğü doğmaz.</div>
+
+    <div class="clause"><span class="clause-label">11.5.</span> Sözleşmenin sona ermesi; 5. (Kabul ve Feragat), 7. (KVKK Yükümlülükleri), 9. (Tazminat) ve 10. (Sorumluluğun Sınırlandırılması) maddelerindeki yükümlülükleri ortadan kaldırmaz. Bu maddeler Sözleşmenin feshinden sonra da <strong>süresiz</strong> olarak yürürlükte kalır.</div>
+
+    <!-- 12. GİZLİLİK VE KVKK -->
+    <h2><span class="num">12.</span> Gizlilik ve Kişisel Verilerin Korunması</h2>
+
+    <div class="clause"><span class="clause-label">12.1.</span> Müşteri; Hizmet süresince ve sonrasında, İşletici tarafından kendisine iletilen her türlü bilgi, belge, teknik yöntem ve ticari sırrı gizli tutmayı; üçüncü kişilerle paylaşmamayı taahhüt eder.</div>
+
+    <div class="clause"><span class="clause-label">12.2.</span> Kullanıcılardan elde edilen Teknik Veriler ve mesaj içerikleri bakımından Müşteri, 7. madde uyarınca <strong>bağımsız veri sorumlusu</strong> sıfatını haiz olup; kendi veri işleme faaliyetlerinden kaynaklanacak her türlü sorumluluk yalnızca Müşteriye aittir.</div>
+
+    <div class="clause"><span class="clause-label">12.3.</span> İşleticinin Platform kapsamında gerçekleştirdiği kendi veri işleme faaliyetlerine ilişkin bilgilendirme, bağımsız olarak hazırlanmış <strong>Aydınlatma Metni</strong>'nde yer almaktadır. Müşteri, işbu Sözleşmenin kişisel verilerin işlenmesine ilişkin hükümler içermediğini ve Aydınlatma Metni'nin ayrı bir hukuki belge olduğunu kabul eder.</div>
+
+    <div class="clause"><span class="clause-label">12.4.</span> Müşteri; Erişim Bilgilerini (yönetim linki ve gizli erişim kodu) gizli tutmakla yükümlüdür. Erişim Bilgilerinin üçüncü kişilerin eline geçmesi hâlinde derhal İşleticiyi bilgilendirir ve bundan doğan her türlü sorumluluk Müşteriye aittir.</div>
+
+    <!-- 13. UYGULANACAK HUKUK VE YETKİ -->
+    <h2><span class="num">13.</span> Uygulanacak Hukuk ve Yetki</h2>
+
+    <div class="clause"><span class="clause-label">13.1.</span> İşbu Sözleşmenin yorumlanmasında, uygulanmasında ve Sözleşmeden doğan ya da doğabilecek her türlü uyuşmazlığın çözümünde <strong>Türkiye Cumhuriyeti hukuku</strong> uygulanır.</div>
+
+    <div class="clause"><span class="clause-label">13.2.</span> İşbu Sözleşmeden doğan veya doğabilecek her türlü uyuşmazlığın çözümünde
+        <span class="placeholder">[İL ADI]</span> Merkez Mahkemeleri ve İcra Daireleri <strong>münhasıran</strong> yetkilidir.
+    </div>
+
+    <div class="clause"><span class="clause-label">13.3.</span> Taraflar; işbu Sözleşmeden kaynaklanan uyuşmazlıkların ispatında, İşleticinin ticari defter ve kayıtlarının, sunucu log kayıtlarının, elektronik yazışmalarının ve Platform üzerindeki sistem kayıtlarının 6100 sayılı Hukuk Muhakemeleri Kanunu m.193 uyarınca <strong>kesin delil</strong> niteliğinde olduğunu kabul eder.</div>
+
+    <div class="clause"><span class="clause-label">13.4.</span> İşbu Sözleşmenin herhangi bir hükmünün geçersiz veya uygulanamaz sayılması, diğer hükümlerin geçerliliğini etkilemez. Geçersiz sayılan hüküm, geçerli ve amaca en yakın yeni bir hükümle ikame edilmiş sayılır.</div>
+
+    <!-- BİLGİLENDİRME -->
+    <div class="info-box">
+        <strong>Bilgilendirme:</strong> İşbu Sözleşme; İşletici ile Müşteri arasındaki ticari ilişkiyi düzenleyen bağımsız bir belgedir. Platformun genel kullanımına ilişkin kurallar <strong>Kullanım Şartları</strong>'nda, Kullanıcıların kişisel verilerinin işlenmesine ilişkin bilgiler ise <strong>Aydınlatma Metni</strong>'nde düzenlenmiştir.
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="doc-footer">
+        İşbu Müşteri Hizmet Sözleşmesi 13 (on üç) maddeden ibaret olup,<br>
+        Müşterinin Hizmete erişim sağladığı veya ödemeyi gerçekleştirdiği anda yürürlüğe girer.<br><br>
+        © 2026 <strong>ChatAnonim</strong>. Tüm hakları saklıdır.
+    </div>
+
+</main>
+
+</body>
+</html>
