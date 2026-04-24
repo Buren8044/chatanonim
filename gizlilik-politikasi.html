@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gizlilik Politikası — ChatAnonim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --bg:         #0d1117;
+            --surface:    #161b22;
+            --surface2:   #1c2128;
+            --border:     #2a2f3a;
+            --border2:    #30363d;
+            --text:       #e6edf3;
+            --text2:      #8b949e;
+            --text3:      #6e7681;
+            --accent:     #2f81f7;
+            --accent-soft: rgba(47,129,247,0.12);
+            --warn:       #f59e0b;
+        }
+
+        html, body {
+            background: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        /* ── HEADER ── */
+        .doc-header {
+            border-bottom: 1px solid var(--border2);
+            padding-bottom: 28px;
+            margin-bottom: 36px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .brand-logo {
+            width: 42px; height: 42px;
+            background: var(--accent);
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+
+        .brand-sub {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text3);
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+
+        .doc-title {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -0.9px;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .doc-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            font-size: 13px;
+            color: var(--text3);
+        }
+
+        .doc-meta span strong {
+            color: var(--text2);
+            font-weight: 600;
+        }
+
+        /* ── CONTENT ── */
+        h2 {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text);
+            margin: 40px 0 14px;
+            padding-top: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: baseline;
+        }
+
+        h2 .num {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.2px;
+            min-width: 26px;
+        }
+
+        p {
+            font-size: 14.5px;
+            color: var(--text);
+            margin: 12px 0;
+        }
+
+        p.lead {
+            color: var(--text2);
+            font-size: 14px;
+        }
+
+        ul {
+            padding-left: 22px;
+            margin: 10px 0;
+        }
+
+        li {
+            font-size: 14.5px;
+            margin: 7px 0;
+            color: var(--text);
+        }
+
+        li strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* İletişim kartı */
+        .contact-card {
+            margin: 14px 0 8px;
+            padding: 16px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+        }
+
+        .contact-card .row {
+            display: flex;
+            gap: 12px;
+            font-size: 14px;
+            padding: 4px 0;
+            align-items: baseline;
+        }
+
+        .contact-card .row .label {
+            min-width: 90px;
+            color: var(--text3);
+            font-weight: 600;
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .contact-card .row .val {
+            color: var(--text);
+            flex: 1;
+        }
+
+        .placeholder {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px dashed var(--warn);
+            border-radius: 5px;
+            color: var(--warn);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .info-box {
+            margin: 30px 0;
+            padding: 16px 18px;
+            background: var(--accent-soft);
+            border-left: 3px solid var(--accent);
+            border-radius: 6px;
+            font-size: 13.5px;
+            color: var(--text);
+        }
+
+        .info-box strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .divider {
+            border: none;
+            height: 1px;
+            background: var(--border2);
+            margin: 44px 0 28px;
+        }
+
+        .doc-footer {
+            font-size: 12.5px;
+            color: var(--text3);
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 640px) {
+            .page { padding: 28px 18px 60px; }
+            .doc-title { font-size: 26px; }
+            h2 { font-size: 17px; }
+            p, li { font-size: 14px; }
+            .contact-card .row { flex-direction: column; gap: 4px; }
+            .contact-card .row .label { min-width: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<main class="page">
+
+    <header class="doc-header">
+        <div class="brand">
+            <div class="brand-logo">🔒</div>
+            <div>
+                <span class="brand-name">ChatAnonim</span>
+                <span class="brand-sub">chatanonim.site</span>
+            </div>
+        </div>
+        <h1 class="doc-title">Gizlilik Politikası</h1>
+        <div class="doc-meta">
+            <span><strong>Yürürlük Tarihi:</strong> <span class="placeholder">[GG.AA.YYYY]</span></span>
+            <span><strong>Sürüm:</strong> 1.0</span>
+        </div>
+    </header>
+
+    <p class="lead">
+        İşbu Gizlilik Politikası; ChatAnonim platformunun ("<strong>Platform</strong>") kullanımı sırasında elde edilen bilgilerin nasıl toplandığını, kullanıldığını, korunduğunu ve saklandığını açıklamak amacıyla hazırlanmıştır. Bu politika, Platformu ziyaret eden veya kullanan tüm kullanıcılar için geçerlidir.
+    </p>
+
+    <!-- 1. AMAÇ VE KAPSAM -->
+    <h2><span class="num">1.</span> Amaç ve Kapsam</h2>
+    <p>
+        İşbu Gizlilik Politikası, Platformun kullanımı sırasında elde edilen bilgilerin toplanma, kullanım, koruma ve saklama esaslarını açıklar. Bu politika, Platformu ziyaret eden veya kullanan tüm kullanıcılar bakımından geçerlidir.
+    </p>
+    <p>
+        Kişisel verilerin işlenmesine ilişkin detaylı bilgilere; 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında hazırlanan <strong>Aydınlatma Metni</strong> üzerinden ulaşabilirsiniz.
+    </p>
+
+    <!-- 2. TOPLANAN BİLGİLER -->
+    <h2><span class="num">2.</span> Toplanan Bilgiler</h2>
+    <p>Platformun kullanımı sırasında aşağıdaki türde bilgiler toplanabilir:</p>
+    <ul>
+        <li>Kullanıcı tarafından sağlanan bilgiler,</li>
+        <li>Platform kullanımı sırasında oluşan teknik veriler,</li>
+        <li>Sistem güvenliği ve performansına ilişkin kayıtlar,</li>
+        <li>Kullanıcı etkileşimlerine ilişkin veriler.</li>
+    </ul>
+    <p>Toplanan bilgiler, hizmetin sunulması ve geliştirilmesi amacıyla kullanılmaktadır.</p>
+
+    <!-- 3. BİLGİLERİN KULLANIMI -->
+    <h2><span class="num">3.</span> Bilgilerin Kullanımı</h2>
+    <p>Toplanan bilgiler aşağıdaki amaçlarla kullanılabilir:</p>
+    <ul>
+        <li>Platform hizmetlerinin sağlanması ve geliştirilmesi,</li>
+        <li>Kullanıcı deneyiminin iyileştirilmesi,</li>
+        <li>Sistem güvenliğinin sağlanması,</li>
+        <li>Kötüye kullanımın önlenmesi,</li>
+        <li>Teknik sorunların tespiti ve giderilmesi.</li>
+    </ul>
+
+    <!-- 4. ÇEREZLER -->
+    <h2><span class="num">4.</span> Çerezler (Cookies)</h2>
+    <p>
+        Platform, kullanıcı deneyimini geliştirmek amacıyla çerezler ve benzeri teknolojiler kullanabilir.
+    </p>
+    <p>Çerezler;</p>
+    <ul>
+        <li>Oturum yönetimi,</li>
+        <li>Tercihlerin hatırlanması,</li>
+        <li>Sistem performansının ölçülmesi</li>
+    </ul>
+    <p>gibi amaçlarla kullanılmaktadır.</p>
+    <p>
+        Kullanıcılar; tarayıcı ayarları üzerinden çerezleri kontrol edebilir, kabul edebilir, reddedebilir veya silebilir. Çerezlerin devre dışı bırakılması durumunda Platformun bazı özelliklerinin işlevselliği kısmen veya tamamen etkilenebilir.
+    </p>
+
+    <!-- 5. BİLGİ GÜVENLİĞİ -->
+    <h2><span class="num">5.</span> Bilgi Güvenliği</h2>
+    <p>
+        Platform, kullanıcı verilerinin güvenliğini sağlamak amacıyla uygun teknik ve idari önlemler almaktadır.
+    </p>
+    <p>
+        Bununla birlikte, internet üzerinden gerçekleştirilen veri iletimlerinin niteliği gereği mutlak güvenliğin garanti edilemeyeceği hususunda Kullanıcılar bilgilendirilir. Bu kapsamda Kullanıcı, Platform üzerinden ilettiği içeriklerin doğasında bulunan riskleri kabul etmiş sayılır.
+    </p>
+
+    <!-- 6. ÜÇÜNCÜ TARAF HİZMETLER -->
+    <h2><span class="num">6.</span> Üçüncü Taraf Hizmetler</h2>
+    <p>
+        Platform; hizmet sunumu kapsamında üçüncü taraf hizmet sağlayıcılardan yararlanabilir. Bu hizmet sağlayıcılar başlıca aşağıdaki alanlarda destek sunabilir:
+    </p>
+    <ul>
+        <li>Barındırma (hosting),</li>
+        <li>Altyapı hizmetleri,</li>
+        <li>Teknik destek.</li>
+    </ul>
+    <p>
+        Üçüncü taraf hizmetlerin kendi gizlilik politikaları bulunabilir; bu politikalardan Platform sorumlu değildir. Söz konusu hizmet sağlayıcıların lokasyonuna bağlı olarak verilerin yurtdışında bulunan sunucularda işlenmesi söz konusu olabilir; bu konudaki detaylar Aydınlatma Metni'nde düzenlenmiştir.
+    </p>
+
+    <!-- 7. VERİ SAKLAMA -->
+    <h2><span class="num">7.</span> Veri Saklama</h2>
+    <p>
+        Toplanan bilgiler; yalnızca hizmetin sunulması için gerekli olan süre boyunca ve ilgili mevzuatta öngörülen süreler kadar saklanır.
+    </p>
+    <p>
+        Saklama süresinin sona ermesi veya işleme amacının ortadan kalkması hâlinde veriler; yürürlükteki mevzuat hükümleri çerçevesinde silinir, yok edilir veya anonim hale getirilir.
+    </p>
+
+    <!-- 8. KULLANICI HAKLARI -->
+    <h2><span class="num">8.</span> Kullanıcı Hakları</h2>
+    <p>
+        Kullanıcıların kişisel verilerine ilişkin hakları, başta KVKK'nın 11. maddesi olmak üzere ilgili mevzuat kapsamında düzenlenmiş olup; söz konusu hakların kullanımına ve başvuru yöntemine ilişkin detaylar <strong>Aydınlatma Metni</strong>'nde yer almaktadır.
+    </p>
+
+    <!-- 9. POLİTİKA DEĞİŞİKLİKLERİ -->
+    <h2><span class="num">9.</span> Politika Değişiklikleri</h2>
+    <p>
+        Platform; işbu Gizlilik Politikası'nı gerekli gördüğü hâllerde tek taraflı olarak güncelleme hakkını saklı tutar. Güncellenmiş politika, Platform üzerinde yayımlandığı tarihte yürürlüğe girer ve Kullanıcılara duyurulmuş sayılır.
+    </p>
+    <p>
+        Kullanıcıların, güncel politikadan haberdar olabilmek için Platformu zaman zaman ziyaret etmeleri tavsiye edilir.
+    </p>
+
+    <!-- 10. İLETİŞİM -->
+    <h2><span class="num">10.</span> İletişim</h2>
+    <p>
+        İşbu Gizlilik Politikası ile ilgili soru, görüş ve talepleriniz için aşağıdaki iletişim kanalı üzerinden ulaşabilirsiniz:
+    </p>
+    <div class="contact-card">
+        <div class="row">
+            <span class="label">E-posta</span>
+            <span class="val"><span class="placeholder">[E-POSTA ADRESİ]</span></span>
+        </div>
+        <div class="row">
+            <span class="label">Web</span>
+            <span class="val">chatanonim.site</span>
+        </div>
+    </div>
+
+    <!-- BİLGİLENDİRME -->
+    <div class="info-box">
+        <strong>Bilgilendirme:</strong> İşbu Gizlilik Politikası, genel bilgilendirme amacı taşımakta olup; <strong>kişisel verilerin işlenmesine ilişkin hukuki yükümlülükler Aydınlatma Metni kapsamında yerine getirilmektedir</strong>. Platformun kullanımına ilişkin hak ve yükümlülükler ise Kullanım Şartları'nda düzenlenmiştir.
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="doc-footer">
+        İşbu Gizlilik Politikası 10 (on) maddeden ibarettir.<br>
+        © 2026 <strong>ChatAnonim</strong>. Tüm hakları saklıdır.
+    </div>
+
+</main>
+
+</body>
+</html>
